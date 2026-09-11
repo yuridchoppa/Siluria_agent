@@ -3,4 +3,4 @@ name = "siluria-agent"
 version = "0.1.0"
 
 [tool.vercel]
-entrypoint = "api:app"
+entrypoint = "main:app"

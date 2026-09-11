@@ -4,7 +4,13 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "siluria.db")
+import tempfile
+from config import IS_SERVERLESS
+
+if IS_SERVERLESS:
+    DB_PATH = os.path.join(tempfile.gettempdir(), "siluria.db")
+else:
+    DB_PATH = os.getenv("DB_PATH", os.path.join(os.path.dirname(__file__), "siluria.db"))
 
 
 def _now() -> str:
@@ -189,4 +195,7 @@ def get_attachment(att_id: str) -> Optional[Dict[str, Any]]:
         conn.close()
 
 
-init_db()
+try:
+    init_db()
+except Exception as e:
+    print(f"Database init warning: {e}")

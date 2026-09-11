@@ -37,11 +37,18 @@ MAX_TOOL_ROUNDS = 10
 
 class SiluriaAgent:
     def __init__(self):
-        # We enforce standard initialization so Google client doesn't attempt
-        # to load Vertex AI or OAuth ADC credentials unintentionally.
-        os.environ["GEMINI_API_KEY"] = GEMINI_API_KEY
-        self.client = genai.Client()
+        self._client = None
         self.model_name = DEFAULT_MODEL
+
+    @property
+    def client(self) -> genai.Client:
+        if self._client is None:
+            key = os.getenv("GEMINI_API_KEY", GEMINI_API_KEY)
+            if not key:
+                raise ValueError("GEMINI_API_KEY is not set. Please add GEMINI_API_KEY in Vercel Project Settings > Environment Variables.")
+            os.environ["GEMINI_API_KEY"] = key
+            self._client = genai.Client(api_key=key)
+        return self._client
 
     def _config_with_tools(self) -> types.GenerateContentConfig:
         return types.GenerateContentConfig(

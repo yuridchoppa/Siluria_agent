@@ -9,16 +9,33 @@ from fastapi.responses import FileResponse, Response, StreamingResponse
 from pydantic import BaseModel
 
 from agent import SiluriaAgent
-from config import WORKSPACE_DIR
+from config import WORKSPACE_DIR, IS_SERVERLESS, DEFAULT_MODEL, GEMINI_API_KEY
 import db
 
 app = FastAPI()
 agent = SiluriaAgent()
 
-os.makedirs("ui", exist_ok=True)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+UI_DIR = os.path.join(BASE_DIR, "ui")
 UPLOAD_DIR = os.path.join(WORKSPACE_DIR, "uploads")
-os.makedirs(UPLOAD_DIR, exist_ok=True)
-app.mount("/static", StaticFiles(directory="ui"), name="ui")
+
+try:
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+except OSError:
+    pass
+
+if os.path.isdir(UI_DIR):
+    app.mount("/static", StaticFiles(directory=UI_DIR), name="ui")
+
+
+@app.get("/health")
+async def health_check():
+    return {
+        "status": "online",
+        "has_api_key": bool(os.getenv("GEMINI_API_KEY", GEMINI_API_KEY)),
+        "serverless": IS_SERVERLESS,
+        "model": DEFAULT_MODEL,
+    }
 
 
 class ChatRequest(BaseModel):
@@ -30,21 +47,27 @@ class ChatRequest(BaseModel):
 
 @app.get("/")
 async def read_index():
+    index_path = os.path.join(UI_DIR, "index.html")
+    if os.path.isfile(index_path):
+        return FileResponse(index_path)
     return FileResponse("ui/index.html")
 
 
 @app.get("/logo")
 async def get_logo():
-    search_dirs = [".", "ui"]
+    search_dirs = [BASE_DIR, UI_DIR, "."]
     extensions = (".png", ".jpg", ".jpeg", ".webp", ".svg", ".gif")
     for d in search_dirs:
         if os.path.isdir(d):
-            for f in os.listdir(d):
-                if f.lower().endswith(extensions) and "knight" in f.lower():
-                    return FileResponse(os.path.join(d, f))
-            for f in os.listdir(d):
-                if f.lower().endswith(extensions):
-                    return FileResponse(os.path.join(d, f))
+            try:
+                for f in os.listdir(d):
+                    if f.lower().endswith(extensions) and "knight" in f.lower():
+                        return FileResponse(os.path.join(d, f))
+                for f in os.listdir(d):
+                    if f.lower().endswith(extensions):
+                        return FileResponse(os.path.join(d, f))
+            except Exception:
+                pass
     return Response(status_code=404)
 
 

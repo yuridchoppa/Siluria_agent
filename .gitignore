@@ -1,0 +1,20 @@
+# Environment secrets
+.env
+
+# Python artifacts
+__pycache__/
+*.pyc
+*.pyo
+
+# SQLite database
+*.db
+siluria.db
+
+# Logs
+*.log
+uvicorn.log
+uvicorn_err.log
+
+# Temporary / workspace files
+workspace/uploads/*
+!workspace/uploads/.gitkeep

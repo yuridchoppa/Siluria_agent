@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Siluria AI — The Great Order</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=VT323&family=Cinzel:wght@500;700;900&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        /* Login Modal Styles */
+        #login-modal {
+            display: none; position: fixed; inset: 0; z-index: 1000;
+            background: rgba(5, 4, 2, 0.88); backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            align-items: center; justify-content: center;
+            padding: 20px;
+        }
+        #login-modal.show { display: flex; animation: fadeInModal 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes fadeInModal {
+            from { opacity: 0; transform: scale(0.96) translateY(8px); }
+            to   { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .login-box {
+            background: linear-gradient(180deg, rgba(24, 18, 10, 0.98) 0%, rgba(12, 9, 5, 0.98) 100%);
+            border: 1px solid rgba(229, 193, 88, 0.38);
+            padding: 34px 32px 28px; width: 100%; max-width: 440px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.85), 0 0 35px rgba(229,193,88,0.14), inset 0 0 25px rgba(0,0,0,0.6);
+            text-align: center; border-radius: 4px; position: relative;
+        }
+        /* Corner Golden Ornaments */
+        .modal-corner {
+            position: absolute; width: 14px; height: 14px;
+            border-color: var(--gold); border-style: solid; pointer-events: none;
+            opacity: 0.85; filter: drop-shadow(0 0 3px var(--gold-glow));
+        }
+        .modal-corner.tl { top: -2px; left: -2px; border-width: 2px 0 0 2px; }
+        .modal-corner.tr { top: -2px; right: -2px; border-width: 2px 2px 0 0; }
+        .modal-corner.bl { bottom: -2px; left: -2px; border-width: 0 0 2px 2px; }
+        .modal-corner.br { bottom: -2px; right: -2px; border-width: 0 2px 2px 0; }
+
+        .btn-close-modal {
+            position: absolute; top: 14px; right: 14px;
+            background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(229, 193, 88, 0.2);
+            width: 30px; height: 30px; border-radius: 50%;
+            color: var(--gold-dim); cursor: pointer; font-size: 13px;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.25s ease;
+        }
+        .btn-close-modal:hover {
+            background: rgba(229, 193, 88, 0.2); color: var(--gold-bright);
+            border-color: var(--gold); transform: rotate(90deg);
+        }
+
+        .login-header { margin-bottom: 18px; }
+        .login-badge {
+            font-family: 'Cinzel', serif; font-size: 10px; font-weight: 700;
+            letter-spacing: 0.22rem; color: var(--gold); margin-bottom: 6px;
+            text-shadow: 0 0 8px var(--gold-glow);
+        }
+        .login-title {
+            font-family: 'Cinzel', serif; font-size: 22px; font-weight: 700;
+            color: var(--gold-bright); letter-spacing: 0.18rem; margin-bottom: 6px;
+            text-shadow: 0 0 16px rgba(229, 193, 88, 0.5);
+        }
+        .login-subtitle {
+            font-family: 'IM Fell English', serif; font-style: italic;
+            font-size: 13px; color: var(--text-muted); line-height: 1.4;
+        }
+
+        /* Mode Switcher Tabs */
+        .auth-tabs {
+            display: flex; background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(229, 193, 88, 0.18); border-radius: 6px;
+            padding: 3px; margin-bottom: 16px; gap: 4px;
+        }
+        .auth-tab {
+            flex: 1; padding: 8px 10px; background: transparent; border: none;
+            border-radius: 4px; font-family: 'Cinzel', serif; font-size: 11px;
+            font-weight: 700; letter-spacing: 0.08rem; color: var(--text-muted);
+            cursor: pointer; transition: all 0.2s ease;
+        }
+        .auth-tab.active {
+            background: rgba(229, 193, 88, 0.16); color: var(--gold-bright);
+            border: 1px solid rgba(229, 193, 88, 0.35);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+        }
+        .auth-tab:hover:not(.active) {
+            color: #fff; background: rgba(255, 255, 255, 0.03);
+        }
+
+        /* Social Auth Grid / Stack */
+        .social-login-grid {
+            display: flex; flex-direction: column; gap: 9px; margin-bottom: 16px;
+        }
+        .btn-social {
+            display: flex; align-items: center; width: 100%; height: 42px;
+            padding: 0 14px; background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(229, 193, 88, 0.22); border-radius: 6px;
+            cursor: pointer; transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative; overflow: hidden;
+        }
+        .btn-social .social-icon-box {
+            width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .btn-social .social-text {
+            flex: 1; text-align: center; font-family: 'Cinzel', serif;
+            font-size: 12px; font-weight: 600; letter-spacing: 0.06rem;
+            color: var(--text-main); transition: color 0.2s;
+        }
+        .btn-social .social-arrow {
+            color: rgba(229, 193, 88, 0.3); font-size: 14px; transition: all 0.2s;
+        }
+        .btn-social:hover {
+            background: rgba(229, 193, 88, 0.09); border-color: var(--gold);
+            transform: translateY(-1.5px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4), 0 0 12px rgba(229, 193, 88, 0.16);
+        }
+        .btn-social:hover .social-text { color: #ffffff; }
+        .btn-social:hover .social-arrow {
+            color: var(--gold-bright); transform: translateX(3px);
+        }
+        .btn-social:active { transform: translateY(0); }
+
+        /* Divider */
+        .auth-divider {
+            display: flex; align-items: center; gap: 12px; margin: 16px 0 16px;
+        }
+        .auth-divider::before, .auth-divider::after {
+            content: ''; flex: 1; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(229, 193, 88, 0.3), transparent);
+        }
+        .auth-divider span {
+            font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.16rem;
+            text-transform: uppercase; color: var(--gold-dim); font-weight: 600; white-space: nowrap;
+        }
+
+        /* Input Form & Groups */
+        .input-group {
+            position: relative; margin-bottom: 11px; text-align: left;
+        }
+        .input-icon {
+            position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+            color: var(--gold-dim); pointer-events: none; transition: color 0.2s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .login-input {
+            width: 100%; height: 42px; background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(229, 193, 88, 0.22); border-radius: 6px;
+            padding: 0 38px 0 40px; font-family: 'Cinzel', serif; font-size: 12.5px;
+            color: #ffffff; letter-spacing: 0.04rem; outline: none; transition: all 0.25s;
+            text-align: left;
+        }
+        .login-input:focus {
+            border-color: var(--gold); background: rgba(18, 14, 8, 0.85);
+            box-shadow: 0 0 14px rgba(229, 193, 88, 0.22);
+        }
+        .input-group:focus-within .input-icon { color: var(--gold-bright); }
+        .login-input::placeholder {
+            color: rgba(181, 158, 114, 0.55); font-family: 'Cinzel', serif; font-size: 11.5px;
+            letter-spacing: 0.05rem;
+        }
+        .btn-toggle-pass {
+            position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+            background: transparent; border: none; color: var(--gold-dim);
+            cursor: pointer; padding: 4px; display: flex; align-items: center;
+            justify-content: center; transition: color 0.2s;
+        }
+        .btn-toggle-pass:hover { color: var(--gold-bright); }
+
+        /* Aux Row */
+        .form-row-aux {
+            display: flex; align-items: center; justify-content: space-between;
+            margin: 4px 0 16px; font-family: 'Cinzel', serif; font-size: 11px;
+        }
+        .checkbox-container {
+            display: flex; align-items: center; gap: 7px; color: var(--text-muted);
+            cursor: pointer; user-select: none;
+        }
+        .checkbox-container input[type="checkbox"] {
+            accent-color: var(--gold); width: 14px; height: 14px; cursor: pointer;
+        }
+        .link-forgot {
+            color: var(--gold-dim); text-decoration: none; transition: color 0.2s;
+        }
+        .link-forgot:hover { color: var(--gold-bright); text-decoration: underline; }
+
+        /* Auth Submit Button */
+        .btn-auth {
+            width: 100%; height: 44px;
+            background: linear-gradient(135deg, rgba(229, 193, 88, 0.25) 0%, rgba(150, 118, 45, 0.35) 100%);
+            border: 1px solid var(--gold); border-radius: 6px;
+            color: var(--gold-bright); font-family: 'Cinzel', serif; font-size: 13px;
+            font-weight: 700; letter-spacing: 0.16rem; text-transform: uppercase;
+            cursor: pointer; transition: all 0.25s; position: relative; overflow: hidden;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.5), inset 0 0 10px rgba(229, 193, 88, 0.15);
+            margin-top: 0;
+        }
+        .btn-auth:hover {
+            background: linear-gradient(135deg, rgba(229, 193, 88, 0.45) 0%, rgba(190, 150, 55, 0.55) 100%);
+            color: #ffffff; border-color: var(--gold-bright);
+            box-shadow: 0 6px 24px rgba(229, 193, 88, 0.35), inset 0 0 15px rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+        .btn-auth:active { transform: translateY(0); }
+
+        .auth-footer-text {
+            margin-top: 14px; font-family: 'Cinzel', serif; font-size: 10px;
+            letter-spacing: 0.04rem; color: rgba(181, 158, 114, 0.5); line-height: 1.4;
+        }
+        .auth-footer-text span { color: var(--gold-dim); }
+
+        :root {
+            --bg:          #080603;
+            --gold:        #e5c158;
+            --gold-bright: #fff2a3;
+            --gold-dim:    #8c7233;
+            --gold-glow:   rgba(229, 193, 88, 0.45);
+            --text-main:   #f5ebd4;
+            --text-bright: #ffffff;
+            --text-muted:  #b59e72;
+            --panel:       rgba(14, 11, 6, 0.92);
+            --panel-deep:  rgba(8, 6, 3, 0.96);
+            --border:      rgba(229, 193, 88, 0.25);
+            --border-hi:   rgba(229, 193, 88, 0.65);
+            --red:         #9e1a1a;
+            --red-bright:  #ff3838;
+            --sidebar-w:   290px;
+        }
+
+        html, body {
+            width: 100%; height: 100%;
+            background: var(--bg);
+            color: var(--text-main);
+            font-family: 'VT323', monospace;
+            font-size: 19px;
+            overflow: hidden;
+            display: flex;
+        }
+
+        /* ═══════════════════════════════
+           SOULS FOG / SKY / ERDTREE BACKGROUND
+           ═══════════════════════════════ */
+        .bg-sky {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            background:
+                radial-gradient(ellipse 120% 60% at 50% 0%, #2b1a08 0%, #120c04 45%, #050402 100%),
+                radial-gradient(ellipse 60% 40% at 50% 30%, rgba(229,193,88,0.12) 0%, transparent 70%);
+        }
+
+        .bg-fog {
+            position: fixed; inset: 0; z-index: 1; pointer-events: none;
+        }
+        .fog-band {
+            position: absolute; left: -10%; width: 120%;
+            background: radial-gradient(ellipse at center, var(--col, rgba(45,30,10,0.5)) 0%, transparent 70%);
+            animation: fogDrift var(--spd, 18s) ease-in-out infinite alternate;
+            filter: blur(10px);
+        }
+        @keyframes fogDrift {
+            0%   { transform: translateX(-4%) scaleY(1); opacity: var(--a0, 0.5); }
+            100% { transform: translateX( 4%) scaleY(1.08); opacity: var(--a1, 0.85); }
+        }
+
+        .bg-erdtree {
+            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 4px; height: 100%;
+            background: linear-gradient(to top, transparent 0%, rgba(229,193,88,0.1) 30%, rgba(255,240,160,0.35) 75%, transparent 100%);
+            filter: blur(35px); z-index: 2; pointer-events: none;
+            animation: erdtreePulse 8s ease-in-out infinite alternate;
+        }
+        .bg-erdtree-wide {
+            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 700px; height: 80%;
+            background: radial-gradient(ellipse at 50% 100%, rgba(229,193,88,0.15) 0%, rgba(229,193,88,0.05) 45%, transparent 70%);
+            filter: blur(40px); z-index: 2; pointer-events: none;
+            animation: erdtreePulse 8s ease-in-out infinite alternate;
+        }
+        @keyframes erdtreePulse { 0% { opacity: 0.6; } 100% { opacity: 1; } }
+
+        .layer-scanlines {
+            position: fixed; inset: 0; z-index: 51; pointer-events: none;
+            background: repeating-linear-gradient(to bottom, transparent 0px, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
+        }
+        .layer-vignette {
+            position: fixed; inset: 0; z-index: 52; pointer-events: none;
+            background: radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.5) 70%, rgba(0,0,0,0.92) 100%);
+        }
+
+        /* ═══════════════════════════════
+           SIDEBAR — CHRONICLES (SESSIONS)
+           ═══════════════════════════════ */
+        #sidebar {
+            width: var(--sidebar-w);
+            height: 100%;
+            background: var(--panel-deep);
+            border-right: 1px solid var(--border);
+            z-index: 80;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            backdrop-filter: blur(12px);
+            box-shadow: 5px 0 25px rgba(0,0,0,0.8);
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 18px 16px 14px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .sidebar-title {
+            font-family: 'Cinzel', serif;
+            font-size: 16px;
+            letter-spacing: 0.2rem;
+            color: var(--gold-bright);
+            text-shadow: 0 0 10px var(--gold-glow);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .sidebar-title span { font-size: 18px; color: var(--gold); }
+
+        .btn-new-session {
+            background: rgba(229,193,88,0.08);
+            border: 1px solid var(--border);
+            color: var(--gold-bright);
+            font-family: 'Cinzel', serif;
+            font-size: 12px;
+            letter-spacing: 0.12rem;
+            padding: 9px 14px;
+            margin: 12px 14px 6px;
+            cursor: pointer;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.25s ease;
+        }
+        .btn-new-session:hover {
+            background: rgba(229,193,88,0.22);
+            border-color: var(--gold);
+            box-shadow: 0 0 15px rgba(229,193,88,0.3);
+            transform: translateY(-1px);
+        }
+
+        #sessions-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        #sessions-list::-webkit-scrollbar { width: 4px; }
+        #sessions-list::-webkit-scrollbar-thumb { background: var(--gold-dim); }
+
+        .session-item {
+            padding: 10px 12px;
+            background: rgba(20, 15, 8, 0.6);
+            border: 1px solid rgba(229, 193, 88, 0.1);
+            border-left: 3px solid transparent;
+            color: var(--text-muted);
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.2s;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .session-item:hover {
+            background: rgba(45, 33, 15, 0.7);
+            color: var(--text-bright);
+            border-color: rgba(229, 193, 88, 0.4);
+            border-left-color: var(--gold);
+        }
+        .session-item.active {
+            background: rgba(55, 40, 18, 0.85);
+            color: var(--gold-bright);
+            border-color: var(--border-hi);
+            border-left-color: var(--gold-bright);
+            box-shadow: inset 0 0 12px rgba(229,193,88,0.15);
+        }
+        .session-del-btn {
+            opacity: 0;
+            color: var(--red-bright);
+            background: none;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 2px 6px;
+            transition: opacity 0.2s;
+        }
+        .session-item:hover .session-del-btn { opacity: 0.8; }
+        .session-del-btn:hover { opacity: 1; transform: scale(1.2); }
+
+        /* ═══════════════════════════════
+           MAIN SANCTUARY (CENTER VIEW)
+           ═══════════════════════════════ */
+        #main-view {
+            flex: 1;
+            height: 100%;
+            position: relative;
+            z-index: 60;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 24px 32px 20px;
+            overflow: hidden;
+        }
+
+        /* Top HUD */
+        .top-hud {
+            width: 100%;
+            max-width: 950px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .hud-left, .hud-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .hud-location {
+            font-family: 'Cinzel', serif;
+            font-size: 13px;
+            letter-spacing: 0.2rem;
+            color: var(--gold-bright);
+            text-shadow: 0 0 8px var(--gold-glow);
+        }
+        .hud-sub {
+            font-size: 12px;
+            letter-spacing: 0.2rem;
+            color: var(--text-muted);
+        }
+
+        /* Souls HUD Bars */
+        .hud-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .hud-bar-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .hud-bar-label {
+            font-size: 10px;
+            color: var(--gold);
+            width: 22px;
+            text-align: right;
+            font-weight: bold;
+        }
+        .hud-bar-track {
+            width: 110px; height: 4px;
+            background: rgba(0,0,0,0.8);
+            border: 1px solid rgba(229,193,88,0.2);
+            overflow: hidden;
+        }
+        .hud-bar-fill { height: 100%; transition: width 0.8s ease; }
+        .hud-bar-fill.hp  { background: linear-gradient(to right, #9e1a1a, #ff3b3b); width: 100%; }
+        .hud-bar-fill.fp  { background: linear-gradient(to right, #153275, #3d84ff); width: 85%; }
+        .hud-bar-fill.sta { background: linear-gradient(to right, #1e5218, #4cd43b); width: 95%; }
+
+        /* Runes / Model Info */
+        .hud-runes {
+            text-align: right;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Cinzel', serif;
+            font-size: 14px;
+            color: var(--gold-bright);
+        }
+
+        /* Logo Area */
+        .logo-wrap {
+            position: relative;
+            margin: 2px 0 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #logo-img {
+            width: 90px; height: 90px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 2px solid var(--gold);
+            box-shadow: 0 0 25px rgba(229, 193, 88, 0.4), inset 0 0 15px #000;
+            image-rendering: pixelated;
+        }
+        .logo-ring {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            border-radius: 50%; border: 1px solid rgba(229,193,88,0.3);
+            pointer-events: none; animation: ringPulse 4s infinite alternate;
+        }
+        .logo-ring:nth-child(2) { width: 104px; height: 104px; }
+        .logo-ring:nth-child(3) { width: 120px; height: 120px; border-color: rgba(229,193,88,0.15); animation-delay: 1s; }
+        @keyframes ringPulse { 0% { transform: translate(-50%,-50%) scale(1); opacity: 0.4; } 100% { transform: translate(-50%,-50%) scale(1.05); opacity: 0.9; } }
+
+        .logo-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.4rem;
+            letter-spacing: 0.5rem;
+            color: var(--gold-bright);
+            text-transform: uppercase;
+            margin-top: 6px;
+            text-shadow: 0 0 20px var(--gold-glow);
+        }
+
+        /* ═══════════════════════════════
+           CHAT SANCTUARY (CONTENT)
+           ═══════════════════════════════ */
+        .chat-panel {
+            width: 100%;
+            max-width: 950px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 8px;
+            overflow: hidden;
+        }
+
+        #chatbox {
+            flex: 1;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            padding: 22px 28px;
+            overflow-y: auto;
+            position: relative;
+            border-radius: 3px;
+            box-shadow: inset 0 0 40px rgba(0,0,0,0.85);
+            backdrop-filter: blur(10px);
+        }
+        #chatbox::-webkit-scrollbar { width: 6px; }
+        #chatbox::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 3px; }
+
+        /* Elden Frame Corners */
+        #chatbox::before, #chatbox::after {
+            content: ''; position: absolute; width: 16px; height: 16px;
+            border-color: var(--gold); border-style: solid; pointer-events: none;
+        }
+        #chatbox::before { top:0; left:0; border-width: 2px 0 0 2px; }
+        #chatbox::after  { top:0; right:0; border-width: 2px 2px 0 0; }
+
+        .chat-msg {
+            margin-bottom: 22px;
+            line-height: 1.6;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+        .chat-msg.user {
+            background: rgba(229, 193, 88, 0.05);
+            border-left: 3px solid var(--gold);
+            padding: 10px 16px;
+            border-radius: 0 4px 4px 0;
+        }
+        .chat-msg.assistant {
+            background: rgba(0,0,0,0.4);
+            border-left: 3px solid var(--gold-bright);
+            padding: 14px 18px;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .msg-sender {
+            font-family: 'Cinzel', serif;
+            font-size: 13px;
+            letter-spacing: 0.15rem;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .user .msg-sender { color: var(--gold); }
+        .assistant .msg-sender { color: var(--gold-bright); text-shadow: 0 0 10px var(--gold-glow); }
+
+        .msg-body {
+            font-size: 21px;
+            color: var(--text-bright);
+        }
+        .user .msg-body { color: #fceecb; }
+
+        /* Markdown Styling inside Responses */
+        .msg-body h1, .msg-body h2, .msg-body h3 {
+            font-family: 'Cinzel', serif;
+            color: var(--gold-bright);
+            margin: 14px 0 8px;
+            letter-spacing: 0.05rem;
+        }
+        .msg-body p { margin-bottom: 10px; }
+        .msg-body pre {
+            background: #040302;
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--gold);
+            padding: 14px;
+            margin: 12px 0;
+            overflow-x: auto;
+            border-radius: 3px;
+        }
+        .msg-body code {
+            color: #ffea79;
+            font-family: 'VT323', monospace;
+            font-size: 20px;
+        }
+        .msg-body ul, .msg-body ol { padding-left: 24px; margin-bottom: 10px; }
+        .msg-body li { margin-bottom: 4px; }
+        .msg-body strong { color: var(--gold-bright); font-weight: bold; }
+        .msg-body a { color: var(--gold); text-decoration: underline; }
+
+        .empty-state {
+            font-family: 'IM Fell English', serif;
+            font-style: italic;
+            color: var(--text-muted);
+            font-size: 22px;
+            text-align: center;
+            margin-top: 80px;
+            opacity: 0.7;
+            animation: breathe 5s ease-in-out infinite;
+        }
+        @keyframes breathe { 0%,100%{opacity:0.4} 50%{opacity:0.9} }
+
+        /* ═══════════════════════════════
+           ATTACHMENTS BAR & PILLS
+           ═══════════════════════════════ */
+        #attachments-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 8px;
+            width: 100%;
+            max-width: 950px;
+        }
+        .att-pill {
+            background: rgba(229,193,88,0.15);
+            border: 1px solid var(--gold);
+            color: var(--gold-bright);
+            font-size: 14px;
+            padding: 4px 10px;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(5px);
+        }
+        .att-pill .del {
+            cursor: pointer;
+            color: var(--red-bright);
+            font-weight: bold;
+        }
+
+        /* ═══════════════════════════════
+           INVOCATION INPUT BAR
+           ═══════════════════════════════ */
+        .input-box-container {
+            width: 100%;
+            max-width: 950px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            background: var(--panel-deep);
+            border: 2px solid var(--border);
+            border-radius: 3px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            position: relative;
+        }
+        .input-row:focus-within {
+            border-color: var(--gold);
+            box-shadow: 0 0 20px rgba(229, 193, 88, 0.25);
+        }
+
+        /* The + Plus Sign Button */
+        .btn-plus {
+            width: 52px; height: 52px;
+            background: rgba(229,193,88,0.08);
+            border: none;
+            border-right: 1px solid var(--border);
+            color: var(--gold-bright);
+            font-size: 26px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .btn-plus:hover {
+            background: rgba(229,193,88,0.25);
+            color: #ffffff;
+            text-shadow: 0 0 10px var(--gold);
+        }
+
+        /* Expandable Action Menu for + */
+        #plus-menu {
+            position: absolute;
+            bottom: 60px;
+            left: 0;
+            background: #110d07;
+            border: 1px solid var(--gold);
+            border-radius: 4px;
+            padding: 8px;
+            display: none;
+            flex-direction: column;
+            gap: 6px;
+            z-index: 100;
+            box-shadow: 0 0 25px rgba(0,0,0,0.9);
+        }
+        #plus-menu.show { display: flex; }
+        .plus-option {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid transparent;
+            color: var(--gold-bright);
+            font-family: 'Cinzel', serif;
+            font-size: 13px;
+            padding: 8px 14px;
+            cursor: pointer;
+            text-align: left;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .plus-option:hover {
+            background: rgba(229,193,88,0.2);
+            border-color: var(--gold);
+            color: #fff;
+        }
+
+        #query {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-bright);
+            padding: 14px 18px;
+            font-family: 'VT323', monospace;
+            font-size: 24px;
+            outline: none;
+            caret-color: var(--gold-bright);
+        }
+        #query::placeholder {
+            color: var(--text-muted);
+            font-family: 'IM Fell English', serif;
+            font-style: italic;
+            font-size: 20px;
+        }
+
+        .btn-send {
+            background: rgba(229, 193, 88, 0.12);
+            border: none;
+            border-left: 1px solid var(--border);
+            color: var(--gold-bright);
+            font-family: 'Cinzel', serif;
+            font-size: 14px;
+            letter-spacing: 0.15rem;
+            padding: 0 24px;
+            height: 52px;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+        .btn-send:hover {
+            background: rgba(229, 193, 88, 0.3);
+            color: #ffffff;
+            text-shadow: 0 0 12px var(--gold-glow);
+        }
+
+        /* Status Bar */
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 4px;
+            font-size: 13px;
+            color: var(--text-muted);
+            letter-spacing: 0.15rem;
+        }
+        .progress-track {
+            flex: 1; height: 2px;
+            background: rgba(229,193,88,0.1);
+            margin: 0 16px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%; width: 100%;
+            background: linear-gradient(to right, var(--gold-dim), var(--gold-bright));
+            transition: width 0.5s ease;
+        }
+
+        /* Hidden File Input */
+        #hidden-file-input { display: none; }
+
+        /* Mobile Sidebar Toggle */
+        .sidebar-toggle-btn {
+            display: none;
+            background: rgba(229,193,88,0.15);
+            border: 1px solid var(--gold);
+            color: var(--gold-bright);
+            padding: 8px; margin-right: 10px; cursor: pointer;
+        }
+        @media (max-width: 800px) {
+            .sidebar-toggle-btn { display: block; }
+            #sidebar {
+                position: fixed; left: -290px; z-index: 1000;
+            }
+            #sidebar.open { left: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Fog and Erdtree Atmosphere -->
+    <div class="bg-sky"></div>
+    <div class="bg-fog" id="fogLayer"></div>
+    <div class="bg-erdtree"></div>
+    <div class="bg-erdtree-wide"></div>
+    <div class="layer-scanlines"></div>
+    <div class="layer-vignette"></div>
+
+    <!-- ═══════════════════════════════
+         SIDEBAR: SESSIONS CHRONICLE
+         ═══════════════════════════════ -->
+    <div id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-title"><span>⚜</span> CHRONICLES</div>
+        </div>
+        <button class="btn-new-session" id="btn-new-chat">
+            <span>+</span> NEW CONVERSATION
+        </button>
+        <div id="sessions-list">
+            <!-- Dynamic session items inserted here -->
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════
+         MAIN VIEW (SANCTUARY)
+         ═══════════════════════════════ -->
+    <div id="main-view">
+        <button class="sidebar-toggle-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+        <!-- Top HUD -->
+        <div class="top-hud">
+            <div class="hud-left">
+                <div class="hud-bars">
+                    <div class="hud-bar-row">
+                        <span class="hud-bar-label">HP</span>
+                        <div class="hud-bar-track"><div class="hud-bar-fill hp" id="hpBar"></div></div>
+                    </div>
+                    <div class="hud-bar-row">
+                        <span class="hud-bar-label">FP</span>
+                        <div class="hud-bar-track"><div class="hud-bar-fill fp" id="fpBar"></div></div>
+                    </div>
+                    <div class="hud-bar-row">
+                        <span class="hud-bar-label">STA</span>
+                        <div class="hud-bar-track"><div class="hud-bar-fill sta" id="staBar"></div></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="hud-location">THE GREAT SANCTUARY</div>
+                    <div class="hud-sub">ELDEN RING // SILURIA ARCHIVE</div>
+                </div>
+            </div>
+
+            <div class="hud-right">
+                <div class="hud-runes">
+                    <span>⚜</span> <button id="btn-login" style="background:transparent; border:1px solid rgba(229, 193, 88, 0.5); padding: 4px 12px; font-family:'Cinzel', serif; color:var(--gold-bright); font-size:12px; letter-spacing:0.15rem; cursor:pointer; text-shadow:0 0 5px var(--gold-glow); transition:all 0.3s; border-radius:2px;">KINDLE BONFIRE (LOGIN)</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logo -->
+        <div class="logo-wrap">
+            <div class="logo-ring"></div>
+            <div class="logo-ring"></div>
+            <div class="logo-ring"></div>
+            <img id="logo-img" src="/logo" alt="Siluria Knight" onerror="this.style.display='none'">
+            <div class="logo-title">S I L U R I A</div>
+        </div>
+
+        <!-- Chat History -->
+        <div class="chat-panel">
+            <div id="chatbox">
+                <div class="empty-state">
+                    "The grace burns bright. Speak thy inquiry, and knowledge shall be bestowed."
+                </div>
+            </div>
+        </div>
+
+        <!-- Attachments Preview Area -->
+        <div id="attachments-preview"></div>
+
+        <!-- Invocation / Input Area -->
+        <div class="input-box-container">
+            <div class="input-row">
+                <!-- Expandable Plus Menu -->
+                <div id="plus-menu">
+                    <button class="plus-option" id="opt-upload-file">📁 Upload File / Document</button>
+                    <button class="plus-option" id="opt-upload-image">🖼 Upload Image</button>
+                    <button class="plus-option" id="opt-add-link">🔗 Attach Web Link</button>
+                </div>
+
+                <button class="btn-plus" id="btn-plus" title="Add File, Image, or Web Link">+</button>
+                <input type="text" id="query" placeholder="Speak thy inquiry, Tarnished..." autocomplete="off" spellcheck="false">
+                <button class="btn-send" id="btn-send">INVOKE</button>
+            </div>
+
+            <div class="status-row">
+                <span>ALL TOOLS ARMED</span>
+                <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+                <span id="status-text">AWAITING INPUT</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Hidden file inputs -->
+    <input type="file" id="hidden-file-input" multiple>
+
+    <!-- Login Modal -->
+    <div id="login-modal">
+        <div class="login-box">
+            <!-- Corner Ornaments -->
+            <div class="modal-corner tl"></div>
+            <div class="modal-corner tr"></div>
+            <div class="modal-corner bl"></div>
+            <div class="modal-corner br"></div>
+
+            <button class="btn-close-modal" id="btn-close-login" title="Close Sanctuary">✕</button>
+            
+            <div class="login-header">
+                <div class="login-badge">⚜ THE GREAT ORDER ⚜</div>
+                <div class="login-title" id="auth-main-title">KINDLE THE GRACE</div>
+                <div class="login-subtitle" id="auth-sub-title">Enter the sacred realm & commune with the ancient intellect</div>
+            </div>
+
+            <!-- Switcher Tabs (Sign In / Sign Up) -->
+            <div class="auth-tabs">
+                <button type="button" class="auth-tab active" id="tab-signin" onclick="switchAuthMode('signin')">KINDLE GRACE (SIGN IN)</button>
+                <button type="button" class="auth-tab" id="tab-signup" onclick="switchAuthMode('signup')">INSCRIBE (SIGN UP)</button>
+            </div>
+
+            <!-- Social Login Options -->
+            <div class="social-login-grid">
+                <button type="button" class="btn-social google" onclick="handleSocialAuth('Google')">
+                    <span class="social-icon-box">
+                        <svg width="20" height="20" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17Z"/>
+                            <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24Z"/>
+                            <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.14-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15Z"/>
+                            <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98Z"/>
+                        </svg>
+                    </span>
+                    <span class="social-text">Continue with Google</span>
+                    <span class="social-arrow">→</span>
+                </button>
+
+                <button type="button" class="btn-social apple" onclick="handleSocialAuth('Apple')">
+                    <span class="social-icon-box">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="#ffffff">
+                            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.85c.66-.8 1.11-1.92.99-3.04-.96.04-2.12.64-2.8 1.44-.61.71-1.14 1.86-1 2.97 1.07.08 2.15-.57 2.81-1.37z"/>
+                        </svg>
+                    </span>
+                    <span class="social-text">Continue with Apple</span>
+                    <span class="social-arrow">→</span>
+                </button>
+
+                <button type="button" class="btn-social phone" onclick="handleSocialAuth('Phone OTP')">
+                    <span class="social-icon-box">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e5c158" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="5" y="2" width="14" height="20" rx="3" ry="3"/>
+                            <line x1="12" y1="18" x2="12.01" y2="18"/>
+                            <path d="M9 6h6"/>
+                        </svg>
+                    </span>
+                    <span class="social-text">Continue with Phone OTP</span>
+                    <span class="social-arrow">→</span>
+                </button>
+            </div>
+
+            <div class="auth-divider"><span>✦ OR SACRED SANCTUARY KEYS ✦</span></div>
+
+            <form id="auth-form" onsubmit="event.preventDefault(); submitAuth();">
+                <div class="input-group">
+                    <span class="input-icon">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                    </span>
+                    <input type="text" id="auth-username" class="login-input" placeholder="Tarnished Name or Vessel" spellcheck="false" autocomplete="username" required>
+                </div>
+
+                <div class="input-group signup-field" style="display:none;">
+                    <span class="input-icon">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="4" width="20" height="16" rx="2"/>
+                            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                        </svg>
+                    </span>
+                    <input type="email" id="auth-email" class="login-input" placeholder="Sacred Dispatch (Email Address)" autocomplete="email">
+                </div>
+
+                <div class="input-group">
+                    <span class="input-icon">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                    </span>
+                    <input type="password" id="auth-password" class="login-input" placeholder="Passphrase / Rune Cipher" autocomplete="current-password" required>
+                    <button type="button" class="btn-toggle-pass" onclick="togglePassVisibility('auth-password', this)" title="Toggle Cipher Visibility">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="input-group signup-field" style="display:none;">
+                    <span class="input-icon">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                    </span>
+                    <input type="password" id="auth-confirm" class="login-input" placeholder="Affirm Passphrase" autocomplete="new-password">
+                </div>
+
+                <div class="form-row-aux">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="auth-remember" checked>
+                        <span>Remember Vessel</span>
+                    </label>
+                    <a href="javascript:void(0)" class="link-forgot" onclick="alert('Commune with the ancient grace to recall thy cipher.')">Lost Cipher?</a>
+                </div>
+
+                <button type="submit" class="btn-auth" id="btn-auth-submit">
+                    <span>⚜</span>
+                    <span id="btn-auth-text">ENTER SANCTUARY</span>
+                </button>
+            </form>
+
+            <div class="auth-footer-text">
+                By crossing the fog gate, thou consentest to the <span>Codex of the Lands Between</span>.
+            </div>
+        </div>
+    </div>
+
+    <script>
+    /* ─────────────────────────────────────────
+       FOG GENERATOR
+    ───────────────────────────────────────── */
+    const fogLayer = document.getElementById('fogLayer');
+    const fogDefs = [
+        { top: '60%',  h: '30%', col: 'rgba(40,28,10,0.55)',  spd: '16s', a0: 0.5, a1: 0.8 },
+        { top: '72%',  h: '20%', col: 'rgba(30,20,8,0.45)',   spd: '22s', a0: 0.4, a1: 0.7 },
+        { top: '80%',  h: '16%', col: 'rgba(25,16,5,0.60)',   spd: '12s', a0: 0.6, a1: 0.9 },
+    ];
+    fogDefs.forEach((f, i) => {
+        const el = document.createElement('div');
+        el.className = 'fog-band';
+        el.style.top = f.top;
+        el.style.height = f.h;
+        el.style.setProperty('--col', f.col);
+        el.style.setProperty('--spd', f.spd);
+        el.style.setProperty('--a0', f.a0);
+        el.style.setProperty('--a1', f.a1);
+        el.style.animationDelay = (i * 2.5) + 's';
+        fogLayer.appendChild(el);
+    });
+
+    /* ─────────────────────────────────────────
+       STATE & DATABASE MANAGEMENT
+       ───────────────────────────────────────── */
+    let currentSessionId = "";
+    let attachedFileIds = [];
+    let attachedLinks = [];
+
+    const chatbox = document.getElementById('chatbox');
+    const queryEl = document.getElementById('query');
+    const sendBtn = document.getElementById('btn-send');
+    const sessionsList = document.getElementById('sessions-list');
+    const statusText = document.getElementById('status-text');
+    const progressFill = document.getElementById('progressFill');
+    const plusBtn = document.getElementById('btn-plus');
+    const plusMenu = document.getElementById('plus-menu');
+    const fileInput = document.getElementById('hidden-file-input');
+    const attPreview = document.getElementById('attachments-preview');
+
+    // Login Modal Logic
+    const loginModal = document.getElementById('login-modal');
+    let currentAuthMode = 'signin';
+
+    document.getElementById('btn-login').onclick = () => {
+        loginModal.classList.add('show');
+        setTimeout(() => document.getElementById('auth-username')?.focus(), 100);
+    };
+    document.getElementById('btn-close-login').onclick = () => loginModal.classList.remove('show');
+    loginModal.onclick = (e) => {
+        if (e.target === loginModal) loginModal.classList.remove('show');
+    };
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && loginModal.classList.contains('show')) {
+            loginModal.classList.remove('show');
+        }
+    });
+
+    window.switchAuthMode = (mode) => {
+        currentAuthMode = mode;
+        const tabSignin = document.getElementById('tab-signin');
+        const tabSignup = document.getElementById('tab-signup');
+        const mainTitle = document.getElementById('auth-main-title');
+        const subTitle = document.getElementById('auth-sub-title');
+        const btnAuthText = document.getElementById('btn-auth-text');
+        const signupFields = document.querySelectorAll('.signup-field');
+        const emailInput = document.getElementById('auth-email');
+        const confirmInput = document.getElementById('auth-confirm');
+
+        if (mode === 'signin') {
+            tabSignin.classList.add('active');
+            tabSignup.classList.remove('active');
+            mainTitle.textContent = 'KINDLE THE GRACE';
+            subTitle.textContent = 'Enter the sacred realm & commune with the ancient intellect';
+            btnAuthText.textContent = 'ENTER SANCTUARY';
+            signupFields.forEach(el => el.style.display = 'none');
+            if (emailInput) emailInput.required = false;
+            if (confirmInput) confirmInput.required = false;
+        } else {
+            tabSignup.classList.add('active');
+            tabSignin.classList.remove('active');
+            mainTitle.textContent = 'INSCRIBE SOUL';
+            subTitle.textContent = 'Bind thy vessel to the eternal order of Siluria';
+            btnAuthText.textContent = 'INSCRIBE SOUL & ENTER';
+            signupFields.forEach(el => el.style.display = 'block');
+            if (emailInput) emailInput.required = true;
+            if (confirmInput) confirmInput.required = true;
+        }
+    };
+
+    window.togglePassVisibility = (inputId, btn) => {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        if (input.type === 'password') {
+            input.type = 'text';
+            btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>`;
+        } else {
+            input.type = 'password';
+            btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>`;
+        }
+    };
+
+    window.submitAuth = () => {
+        const username = document.getElementById('auth-username').value.trim() || 'Tarnished';
+        const submitBtn = document.getElementById('btn-auth-submit');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<span>⏳</span> KINDLING GRACE...';
+        submitBtn.disabled = true;
+
+        setTimeout(() => {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+            loginModal.classList.remove('show');
+            document.getElementById('btn-login').innerHTML = `⚜ ${username.toUpperCase()}`;
+            document.getElementById('btn-login').style.borderColor = 'var(--gold)';
+            document.getElementById('btn-login').style.color = '#fff';
+            if (statusText) statusText.textContent = `VESSEL BOUND: ${username.toUpperCase()}`;
+        }, 500);
+    };
+
+    window.handleSocialAuth = (provider) => {
+        loginModal.classList.remove('show');
+        document.getElementById('btn-login').innerHTML = `⚜ ${provider.toUpperCase()}`;
+        document.getElementById('btn-login').style.borderColor = 'var(--gold)';
+        document.getElementById('btn-login').style.color = '#fff';
+        if (statusText) statusText.textContent = `SANCTUARY UNLOCKED VIA ${provider.toUpperCase()}`;
+    };
+
+    // Toggle Plus Menu
+    plusBtn.onclick = (e) => {
+        e.stopPropagation();
+        plusMenu.classList.toggle('show');
+    };
+    document.addEventListener('click', () => plusMenu.classList.remove('show'));
+
+    document.getElementById('opt-upload-file').onclick = () => fileInput.click();
+    document.getElementById('opt-upload-image').onclick = () => {
+        fileInput.accept = "image/*";
+        fileInput.click();
+    };
+    document.getElementById('opt-add-link').onclick = () => {
+        const link = prompt("Enter web URL to attach:");
+        if (link && link.trim()) {
+            attachedLinks.push(link.trim());
+            renderAttachments();
+        }
+    };
+
+    // Upload Handler
+    fileInput.onchange = async () => {
+        if (!fileInput.files.length) return;
+        const formData = new FormData();
+        formData.append("session_id", currentSessionId);
+        for (let i = 0; i < fileInput.files.length; i++) {
+            formData.append("files", fileInput.files[i]);
+        }
+        statusText.textContent = "UPLOADING ARTIFACTS...";
+        try {
+            const res = await fetch('/api/upload', { method: 'POST', body: formData });
+            const data = await res.json();
+            if (data.files) {
+                data.files.forEach(f => attachedFileIds.push(f));
+                renderAttachments();
+            }
+        } catch (e) {
+            alert("Upload failed: " + e);
+        }
+        statusText.textContent = "AWAITING INPUT";
+        fileInput.value = "";
+    };
+
+    function renderAttachments() {
+        attPreview.innerHTML = "";
+        attachedFileIds.forEach((f, idx) => {
+            const div = document.createElement('div');
+            div.className = 'att-pill';
+            div.innerHTML = `<span>📁 ${f.filename}</span> <span class="del" onclick="removeAtt(${idx})">×</span>`;
+            attPreview.appendChild(div);
+        });
+        attachedLinks.forEach((l, idx) => {
+            const div = document.createElement('div');
+            div.className = 'att-pill';
+            div.innerHTML = `<span>🔗 ${l}</span> <span class="del" onclick="removeLink(${idx})">×</span>`;
+            attPreview.appendChild(div);
+        });
+    }
+
+    window.removeAtt = (idx) => { attachedFileIds.splice(idx, 1); renderAttachments(); };
+    window.removeLink = (idx) => { attachedLinks.splice(idx, 1); renderAttachments(); };
+
+    /* ─────────────────────────────────────────
+       LOAD SESSIONS & MESSAGES FROM DATABASE
+       ───────────────────────────────────────── */
+    async function fetchSessions() {
+        try {
+            const res = await fetch('/api/sessions');
+            const data = await res.json();
+            sessionsList.innerHTML = "";
+            data.sessions.forEach(s => {
+                const div = document.createElement('div');
+                div.className = `session-item ${s.id === currentSessionId ? 'active' : ''}`;
+                div.innerHTML = `
+                    <span style="overflow:hidden;text-overflow:ellipsis;">${s.title}</span>
+                    <button class="session-del-btn" onclick="event.stopPropagation(); deleteSession('${s.id}')">✕</button>
+                `;
+                div.onclick = () => loadSession(s.id);
+                sessionsList.appendChild(div);
+            });
+        } catch (e) { console.error("Session load error:", e); }
+    }
+
+    async function loadSession(sid) {
+        currentSessionId = sid;
+        await fetchSessions();
+        try {
+            const res = await fetch(`/api/sessions/${sid}`);
+            const data = await res.json();
+            chatbox.innerHTML = "";
+            if (data.messages && data.messages.length > 0) {
+                data.messages.forEach(m => {
+                    appendMessage(m.role, m.content);
+                });
+            } else {
+                chatbox.innerHTML = `<div class="empty-state">"The chronicle is blank. Speak, and let history be written."</div>`;
+            }
+            chatbox.scrollTop = chatbox.scrollHeight;
+        } catch (e) { console.error("Load messages error:", e); }
+    }
+
+    window.deleteSession = async (sid) => {
+        if (!confirm("Banish this chronicle permanently?")) return;
+        await fetch(`/api/sessions/${sid}`, { method: 'DELETE' });
+        if (currentSessionId === sid) {
+            currentSessionId = "";
+            chatbox.innerHTML = `<div class="empty-state">"Choose or forge a new chronicle from the sidebar."</div>`;
+        }
+        fetchSessions();
+    };
+
+    document.getElementById('btn-new-chat').onclick = async () => {
+        const res = await fetch('/api/sessions', { method: 'POST' });
+        const s = await res.json();
+        loadSession(s.id);
+    };
+
+    function appendMessage(role, text) {
+        const isUser = role === 'user';
+        const div = document.createElement('div');
+        div.className = `chat-msg ${isUser ? 'user' : 'assistant'}`;
+        div.innerHTML = `
+            <div class="msg-sender">${isUser ? '⚔ TARNISHED' : '⚜ SILURIA'}</div>
+            <div class="msg-body">${marked.parse(text)}</div>
+        `;
+        chatbox.appendChild(div);
+        chatbox.scrollTop = chatbox.scrollHeight;
+    }
+
+    /* ─────────────────────────────────────────
+       INSTANT STREAMING INVOCATION
+       ───────────────────────────────────────── */
+    async function invokeAgent() {
+        const text = queryEl.value.trim();
+        if (!text && attachedFileIds.length === 0 && attachedLinks.length === 0) return;
+
+        // Clean initial empty state
+        const emptyEl = chatbox.querySelector('.empty-state');
+        if (emptyEl) emptyEl.remove();
+
+        queryEl.value = "";
+        queryEl.disabled = true;
+        sendBtn.disabled = true;
+        statusText.textContent = "COMMUNING...";
+        progressFill.style.width = "30%";
+
+        // Show User Message
+        appendMessage('user', text);
+
+        // Prep Assistant Container for Streaming
+        const assistDiv = document.createElement('div');
+        assistDiv.className = 'chat-msg assistant';
+        assistDiv.innerHTML = `
+            <div class="msg-sender">⚜ SILURIA</div>
+            <div class="msg-body" id="streaming-target"></div>
+        `;
+        chatbox.appendChild(assistDiv);
+        const streamTarget = document.getElementById('streaming-target');
+
+        const payload = {
+            query: text,
+            session_id: currentSessionId,
+            links: attachedLinks,
+            file_ids: attachedFileIds.map(f => f.id)
+        };
+
+        // Reset attachments
+        attachedFileIds = [];
+        attachedLinks = [];
+        renderAttachments();
+
+        try {
+            const res = await fetch('/api/chat/stream', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder();
+            let fullText = "";
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                const chunk = decoder.decode(value);
+                fullText += chunk;
+                streamTarget.innerHTML = marked.parse(fullText);
+                chatbox.scrollTop = chatbox.scrollHeight;
+                progressFill.style.width = "85%";
+            }
+
+            streamTarget.removeAttribute('id');
+            progressFill.style.width = "100%";
+            statusText.textContent = "IDLE";
+            fetchSessions();
+        } catch (e) {
+            streamTarget.innerHTML = `<span style="color:var(--red-bright);">Connection Severed: ${e}</span>`;
+            statusText.textContent = "ERROR";
+        }
+
+        queryEl.disabled = false;
+        sendBtn.disabled = false;
+        queryEl.focus();
+    }
+
+    sendBtn.onclick = invokeAgent;
+    queryEl.onkeypress = (e) => {
+        if (e.key === 'Enter') invokeAgent();
+    };
+
+    // Initialize Sessions on Boot
+    fetchSessions().then(async () => {
+        const res = await fetch('/api/sessions');
+        const data = await res.json();
+        if (data.sessions.length > 0) {
+            loadSession(data.sessions[0].id);
+        } else {
+            document.getElementById('btn-new-chat').click();
+        }
+    });
+    </script>
+</body>
+</html>

@@ -24,8 +24,13 @@ try:
 except OSError:
     pass
 
+from fastapi.responses import FileResponse, Response, StreamingResponse, HTMLResponse
+
 if os.path.isdir(UI_DIR):
-    app.mount("/static", StaticFiles(directory=UI_DIR), name="ui")
+    try:
+        app.mount("/static", StaticFiles(directory=UI_DIR), name="ui")
+    except Exception:
+        pass
 
 
 @app.get("/health")
@@ -47,10 +52,20 @@ class ChatRequest(BaseModel):
 
 @app.get("/")
 async def read_index():
-    index_path = os.path.join(UI_DIR, "index.html")
-    if os.path.isfile(index_path):
-        return FileResponse(index_path)
-    return FileResponse("ui/index.html")
+    candidates = [
+        os.path.join(UI_DIR, "index.html"),
+        os.path.join(BASE_DIR, "ui", "index.html"),
+        "ui/index.html",
+    ]
+    for path in candidates:
+        if os.path.isfile(path):
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    return HTMLResponse(content=f.read(), status_code=200)
+            except Exception:
+                pass
+    return HTMLResponse(content="<h1>Siluria Agent</h1><p>UI loading...</p>", status_code=200)
+
 
 
 @app.get("/logo")

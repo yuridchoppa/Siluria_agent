@@ -1,14 +1,30 @@
-from duckduckgo_search import DDGS
-from playwright.sync_api import sync_playwright
-import bs4
 import re
 from typing import List, Dict, Any
+import requests
+
+try:
+    from duckduckgo_search import DDGS
+except ImportError:
+    DDGS = None
+
+try:
+    import bs4
+except ImportError:
+    bs4 = None
+
+try:
+    from playwright.sync_api import sync_playwright
+except (ImportError, Exception):
+    sync_playwright = None
+
 
 def search_web(query: str, max_results: int = 5) -> List[Dict[str, str]]:
     """
     Search the web using DuckDuckGo and return a list of dictionaries
     containing 'title', 'href', and 'body' (snippet).
     """
+    if not DDGS:
+        return [{"title": "Search Unavailable", "url": "", "snippet": "Search dependency not installed."}]
     results = []
     try:
         with DDGS() as ddgs:
@@ -23,61 +39,55 @@ def search_web(query: str, max_results: int = 5) -> List[Dict[str, str]]:
 
     return results
 
+
 def clean_html(html_content: str) -> str:
     """
     Parse HTML and extract clean, readable text.
     Removes scripts, styles, and extra whitespace.
     """
-    soup = bs4.BeautifulSoup(html_content, 'html.parser')
+    if bs4:
+        soup = bs4.BeautifulSoup(html_content, 'html.parser')
+        for element in soup(["script", "style", "nav", "header", "footer", "iframe", "noscript"]):
+            element.extract()
+        text = soup.get_text()
+    else:
+        text = re.sub(r'<[^>]+>', ' ', html_content)
 
-    # Remove script and style elements
-    for element in soup(["script", "style", "nav", "header", "footer", "iframe", "noscript"]):
-        element.extract()
-
-    # Get text
-    text = soup.get_text()
-
-    # Break into lines and remove leading and trailing space on each
     lines = (line.strip() for line in text.splitlines())
-    # Break multi-headlines into a line each
     chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
-    # Drop blank lines
-    text = '\n'.join(chunk for chunk in chunks if chunk)
+    return '\n'.join(chunk for chunk in chunks if chunk)
 
-    return text
 
-def scrape_url(url: str, timeout: int = 30000) -> str:
+def scrape_url(url: str, timeout: int = 15000) -> str:
     """
-    Navigate to a URL using a headless browser, wait for the page to render,
-    and return the cleaned text content.
+    Scrape a URL and return cleaned text content.
+    Uses requests with browser headers for speed and serverless reliability,
+    with Playwright fallback if available.
     """
+    # 1. First attempt: standard fast HTTP request (works everywhere, including AWS Lambda / Vercel)
     try:
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            context = browser.new_context(
-                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
-            )
-            page = context.new_page()
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        }
+        resp = requests.get(url, headers=headers, timeout=12)
+        if resp.ok and len(resp.text) > 200:
+            return clean_html(resp.text)[:12000]
+    except Exception:
+        pass
 
-            # Navigate and sit tight until network is mostly idle
-            page.goto(url, wait_until="domcontentloaded", timeout=timeout)
+    # 2. Second attempt: Playwright if present and supported in environment
+    if sync_playwright:
+        try:
+            with sync_playwright() as p:
+                browser = p.chromium.launch(headless=True)
+                context = browser.new_context()
+                page = context.new_page()
+                page.goto(url, wait_until="domcontentloaded", timeout=timeout)
+                html_content = page.content()
+                browser.close()
+                return clean_html(html_content)[:12000]
+        except Exception as e:
+            return f"Error scraping URL {url}: {e}"
 
-            # Try to wait for network idle, but don't fail if it times out
-            try:
-                page.wait_for_load_state("networkidle", timeout=timeout // 2)
-            except Exception:
-                pass
-
-            html_content = page.content()
-            browser.close()
-
-            return clean_html(html_content)
-    except Exception as e:
-        return f"Error scraping URL {url}: {str(e)}"
-
-# Quick test block if run directly
-if __name__ == "__main__":
-    print("Testing DuckDuckGo Search:")
-    print(search_web("Anakin Forge AI Hackathon", max_results=2))
-    print("\nTesting Playwright Scrape (Python.org):")
-    print(scrape_url("https://www.python.org")[:500] + "...\n")
+    return f"Unable to fetch content from {url}."

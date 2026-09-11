@@ -1,0 +1,25 @@
+INFO:     127.0.0.1:51942 - "POST /api/chat/stream HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "GET /logo HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "GET /api/sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "GET /api/sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "GET /api/sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "GET /api/sessions/dd6a50d5-d8a9-4775-8718-9b4c43281003 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63511 - "POST /api/chat/stream HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63511 - "GET /api/sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63511 - "DELETE /api/sessions/82f93509-c87f-45f9-a478-3925098b6617 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63511 - "GET /api/sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58082 - "POST /api/chat/stream HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58082 - "GET /api/sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57949 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57949 - "GET /api/sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57949 - "GET /api/sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57949 - "GET /api/sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57949 - "GET /api/sessions/dd6a50d5-d8a9-4775-8718-9b4c43281003 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57949 - "DELETE /api/sessions/dd6a50d5-d8a9-4775-8718-9b4c43281003 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57949 - "GET /api/sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57949 - "DELETE /api/sessions/002c3245-3f29-486e-b38c-1bf217055dae HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57949 - "GET /api/sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57949 - "DELETE /api/sessions/4578f5ed-2d53-47fc-83c4-1ffe36c20f9d HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57949 - "GET /api/sessions HTTP/1.1" 200 OK

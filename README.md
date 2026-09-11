@@ -11,7 +11,7 @@ An autonomous AI agent capable of:
 
 ## Stack
 - Python 3.11+
-- OpenAI API (GPT-4o for reasoning + vision, DALL-E 3 for image gen)
+- GEMINI API (Gemini Flash for reasoning + vision)
 - Playwright (web browsing)
 - Pillow (image processing)
 - SymPy / SciPy / NumPy (scientific computation)
@@ -25,13 +25,13 @@ playwright install chromium
 
 ## Run
 ```bash
-python agent.py
+python api.py
 ```
 
 Set your API key:
 ```bash
-export OPENAI_API_KEY=your_key_here
+export GEMINI_API_KEY=your_key_here
 # or on Windows:
-set OPENAI_API_KEY=your_key_here
+set GEMINI_API_KEY=your_key_here
 ```
-"# Siluria-AI" 
+"# Siluria-AI"

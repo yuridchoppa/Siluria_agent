@@ -827,6 +827,26 @@
         }
         @keyframes breathe { 0%,100%{opacity:0.4} 50%{opacity:0.9} }
 
+        .prompt-chip {
+            background: rgba(229, 193, 88, 0.08);
+            border: 1px solid rgba(229, 193, 88, 0.35);
+            color: var(--gold-bright);
+            padding: 8px 16px;
+            font-family: 'Cinzel', serif;
+            font-size: 11px;
+            letter-spacing: 0.08rem;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: all 0.25s ease;
+            backdrop-filter: blur(4px);
+        }
+        .prompt-chip:hover {
+            background: rgba(229, 193, 88, 0.22);
+            border-color: var(--gold-bright);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(229, 193, 88, 0.2);
+        }
+
         /* ═══════════════════════════════
            ATTACHMENTS BAR & PILLS
            ═══════════════════════════════ */
@@ -1067,7 +1087,7 @@
                 </div>
                 <div>
                     <div class="hud-location">THE GREAT SANCTUARY</div>
-                    <div class="hud-sub">ELDEN RING // SILURIA ARCHIVE</div>
+                    <div class="hud-sub">ANAKINFORGE // SILURIA ARCHIVE</div>
                 </div>
             </div>
 
@@ -1111,7 +1131,13 @@
         <div class="chat-panel">
             <div id="chatbox">
                 <div class="empty-state">
-                    "The grace burns bright. Speak thy inquiry, and knowledge shall be bestowed."
+                    <div style="margin-bottom: 20px;">"The grace burns bright. Speak thy inquiry, and knowledge shall be bestowed."</div>
+                    <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; max-width: 720px; margin: 0 auto;">
+                        <button class="prompt-chip" onclick="setInputAndSend('Search the web for the latest AI agent news and extract with AnakinScraper')">⚡ Live AI News (AnakinScraper)</button>
+                        <button class="prompt-chip" onclick="setInputAndSend('Scrape https://news.ycombinator.com using AnakinScraper and summarize top stories')">🌐 Hacker News Extraction</button>
+                        <button class="prompt-chip" onclick="setInputAndSend('Evaluate the integral of x^2 * exp(-x) with respect to x using math evaluation')">🔬 Calculus & Math Engine</button>
+                        <button class="prompt-chip" onclick="setInputAndSend('Write and run Python code to calculate the first 15 Fibonacci numbers')">💻 Run Python Sandbox</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1397,6 +1423,13 @@
     const statusText = document.getElementById('status-text');
     const progressFill = document.getElementById('progressFill');
     const plusBtn = document.getElementById('btn-plus');
+
+    window.setInputAndSend = function(text) {
+        if (queryEl) {
+            queryEl.value = text;
+            if (sendBtn) sendBtn.click();
+        }
+    };
     const plusMenu = document.getElementById('plus-menu');
     const fileInput = document.getElementById('hidden-file-input');
     const attPreview = document.getElementById('attachments-preview');

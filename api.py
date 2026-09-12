@@ -15,11 +15,21 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, Response, StreamingResponse, HTMLResponse
 from pydantic import BaseModel
 
-from config import WORKSPACE_DIR, IS_SERVERLESS, DEFAULT_MODEL, ANAKIN_API_KEY
+from config import (
+    WORKSPACE_DIR,
+    IS_SERVERLESS,
+    DEFAULT_MODEL,
+    ANAKIN_API_KEY,
+    GEMINI_API_KEY,
+    LLM_API_KEY,
+    ACTIVE_PROVIDER,
+    ANAKIN_SCRAPER_URL,
+)
+from tools.anakin_scraper import AnakinScraper, anakin_scrape
 import db
 from agent import SiluriaAgent
 
-app = FastAPI(title="Siluria Agent")
+app = FastAPI(title="Siluria Agent - AnakinForge")
 agent = SiluriaAgent()
 
 UI_DIR = os.path.join(BASE_DIR, "ui")
@@ -48,12 +58,41 @@ if os.path.isdir(UI_DIR):
 
 @app.get("/health")
 async def health_check():
+    has_key = bool(os.getenv("LLM_API_KEY") or LLM_API_KEY or os.getenv("GEMINI_API_KEY") or GEMINI_API_KEY or os.getenv("ANAKIN_API_KEY") or ANAKIN_API_KEY)
     return {
         "status": "online",
-        "has_api_key": bool(os.getenv("ANAKIN_API_KEY", ANAKIN_API_KEY)),
+        "has_api_key": has_key,
+        "llm_provider": ACTIVE_PROVIDER,
+        "anakin_scraper": "integrated",
+        "has_anakin_key": bool(os.getenv("ANAKIN_API_KEY") or ANAKIN_API_KEY),
         "serverless": IS_SERVERLESS,
         "model": DEFAULT_MODEL,
     }
+
+
+class ScrapeRequest(BaseModel):
+    url: str
+    format: Optional[str] = "markdown"
+
+
+@app.post("/v1/scrape")
+async def anakin_scrape_endpoint(req: ScrapeRequest):
+    """
+    AnakinScraper-compatible endpoint (POST /v1/scrape).
+    Implements full API compatibility with Anakin-Inc/anakin.
+    """
+    scraper = AnakinScraper()
+    res = scraper.scrape(req.url)
+    return {
+        "url": req.url,
+        "success": res["success"],
+        "handler": res.get("handler"),
+        "markdown": res.get("markdown", ""),
+        "text": res.get("markdown", ""),
+        "length": res.get("length", 0),
+        "error": res.get("error"),
+    }
+
 
 
 

@@ -9,9 +9,17 @@ if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
 from openai import OpenAI
-from config import ANAKIN_API_KEY, ANAKIN_BASE_URL, DEFAULT_MODEL, MODEL_FALLBACKS
+from config import (
+    LLM_API_KEY,
+    LLM_BASE_URL,
+    DEFAULT_MODEL,
+    MODEL_FALLBACKS,
+    ACTIVE_PROVIDER,
+    ANAKIN_API_KEY,
+    GEMINI_API_KEY,
+)
 
-from tools.web_tool import search_web, scrape_url
+from tools.web_tool import search_web, scrape_url, anakin_scrape
 from tools.science_tool import evaluate_math
 from tools.code_tool import execute_python
 import db
@@ -20,6 +28,7 @@ import db
 TOOL_FUNCTIONS = {
     "search_web": search_web,
     "scrape_url": scrape_url,
+    "anakin_scrape": anakin_scrape,
     "evaluate_math": evaluate_math,
     "execute_python": execute_python,
 }
@@ -51,13 +60,30 @@ TOOLS_SCHEMA = [
         "type": "function",
         "function": {
             "name": "scrape_url",
-            "description": "Scrape and extract clean text content from a web URL.",
+            "description": "Scrape and extract clean LLM-ready markdown from a web URL using the AnakinScraper engine.",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "url": {
                         "type": "string",
                         "description": "The URL to scrape text from."
+                    }
+                },
+                "required": ["url"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "anakin_scrape",
+            "description": "Scrape and extract clean LLM-ready markdown from any web page using AnakinScraper (https://github.com/Anakin-Inc/anakin). Features multi-stage fallback (HTTP -> Anti-detect Browser -> Anakin.io Hosted API).",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "description": "The web URL to scrape with AnakinScraper."
                     }
                 },
                 "required": ["url"]
@@ -101,14 +127,15 @@ TOOLS_SCHEMA = [
 ]
 
 SYSTEM_INSTRUCTION = (
-    "You are Siluria, an Anakin.io powered autonomous, high-performance AI agent.\n"
-    "You can:\n"
-    "1. Search the live web (search_web) and read web pages (scrape_url).\n"
-    "2. Evaluate mathematics and physics (evaluate_math).\n"
-    "3. Execute arbitrary Python code (execute_python).\n\n"
-    "Be concise, accurate, and proactive with tool use. "
-    "You have full session history — maintain context across messages. "
-    "Give thorough, detailed answers. When uncertain, search the web first."
+    "You are Siluria (AnakinForge), an autonomous, high-performance AI agent.\n"
+    "You are integrated with AnakinScraper (https://github.com/Anakin-Inc/anakin) and powered by Anakin.io / Google Gemini.\n"
+    "Your capabilities include:\n"
+    "1. High-performance web scraping and LLM-ready markdown extraction via AnakinScraper (anakin_scrape, scrape_url).\n"
+    "2. Real-time web search (search_web).\n"
+    "3. Symbolic and numeric mathematical computation (evaluate_math).\n"
+    "4. Python execution sandbox for scripting and data analysis (execute_python).\n\n"
+    "Be concise, insightful, and proactive with tools. Maintain session context across turns. "
+    "When researching or answering questions about websites or current events, use AnakinScraper and web search proactively."
 )
 
 MAX_TOOL_ROUNDS = 10
@@ -122,13 +149,13 @@ class SiluriaAgent:
     @property
     def client(self) -> OpenAI:
         if self._client is None:
-            key = os.getenv("ANAKIN_API_KEY", ANAKIN_API_KEY)
+            key = os.getenv("LLM_API_KEY") or LLM_API_KEY
+            base_url = os.getenv("LLM_BASE_URL") or LLM_BASE_URL
             if not key:
                 raise ValueError(
-                    "ANAKIN_API_KEY is not set. Please add ANAKIN_API_KEY in your environment variables or Vercel Project Settings."
+                    "No LLM API Key configured. Please set GEMINI_API_KEY or ANAKIN_API_KEY in your .env or Vercel Environment Variables."
                 )
-            base_url = os.getenv("ANAKIN_BASE_URL", ANAKIN_BASE_URL)
-            self._client = OpenAI(api_key=key, base_url=base_url)
+            self._client = OpenAI(api_key=key, base_url=base_url if base_url else None)
         return self._client
 
     def _models(self) -> List[str]:
@@ -216,7 +243,7 @@ class SiluriaAgent:
                 # Persist full response
                 full_response = "".join(chunks_sent)
                 import re
-                clean = re.sub(r'\n\n\*⚙ \[.*?\]\*\n\n', '', full_response)
+                clean = re.sub(r'\n\n\*(?:⚙|\[Tool:) .*?\]\*\n\n|\n\n\*⚙ \[.*?\]\*\n\n', '', full_response)
                 self.model_name = model
                 db.add_message(session_id, "assistant", clean.strip())
                 return
@@ -273,10 +300,29 @@ class SiluriaAgent:
 
             # Tool calls encountered
             tool_names = ", ".join([tc.function.name for tc in msg.tool_calls])
-            yield f"\n\n*⚙ [{tool_names}]*\n\n"
+            yield f"\n\n*[Tool: {tool_names}]*\n\n"
 
-            # Append assistant message with tool calls
-            messages.append(msg.model_dump())
+            # Build clean assistant message preserving tool calls and Google thought_signatures
+            asst_dict = {
+                "role": "assistant",
+                "content": msg.content or "",
+                "tool_calls": []
+            }
+            for tc in msg.tool_calls:
+                tc_dict = {
+                    "id": tc.id,
+                    "type": "function",
+                    "function": {
+                        "name": tc.function.name,
+                        "arguments": tc.function.arguments
+                    }
+                }
+                extra = getattr(tc, "extra_content", None)
+                if extra:
+                    tc_dict["extra_content"] = extra
+                asst_dict["tool_calls"].append(tc_dict)
+
+            messages.append(asst_dict)
 
             # Execute tool calls and append results
             for tc in msg.tool_calls:

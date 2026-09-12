@@ -65,36 +65,31 @@ def clean_html(html_content: str) -> str:
     return '\n'.join(chunk for chunk in chunks if chunk)
 
 
+from tools.anakin_scraper import anakin_scrape, anakin_scrape_batch
+
+
 def scrape_url(url: str, timeout: int = 15000) -> str:
     """
-    Scrape a URL and return cleaned text content.
-    Uses requests with browser headers for speed and serverless reliability,
-    with Playwright fallback if available.
+    Scrape a URL and return clean LLM-ready markdown using the AnakinScraper engine
+    (Handler chain: Fast HTTP -> Headless Browser -> Anakin API fallback).
     """
-    # 1. First attempt: standard fast HTTP request (works everywhere, including AWS Lambda / Vercel)
+    try:
+        content = anakin_scrape(url, max_length=12000)
+        if content and not content.startswith("Failed to retrieve content"):
+            return content
+    except Exception as e:
+        print(f"AnakinScraper exception: {e}")
+
+    # Fallback to local basic HTTP
     try:
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         }
-        resp = requests.get(url, headers=headers, timeout=12)
-        if resp.ok and len(resp.text) > 200:
+        resp = requests.get(url, headers=headers, timeout=10)
+        if resp.ok and len(resp.text) > 100:
             return clean_html(resp.text)[:12000]
     except Exception:
         pass
-
-    # 2. Second attempt: Playwright if present and supported in environment
-    if sync_playwright:
-        try:
-            with sync_playwright() as p:
-                browser = p.chromium.launch(headless=True)
-                context = browser.new_context()
-                page = context.new_page()
-                page.goto(url, wait_until="domcontentloaded", timeout=timeout)
-                html_content = page.content()
-                browser.close()
-                return clean_html(html_content)[:12000]
-        except Exception as e:
-            return f"Error scraping URL {url}: {e}"
 
     return f"Unable to fetch content from {url}."

@@ -1,21 +1,28 @@
+import os
+import sys
 import re
 from typing import List, Dict, Any
 import requests
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
 try:
     from duckduckgo_search import DDGS
-except ImportError:
+except (ImportError, Exception):
     DDGS = None
 
 try:
     import bs4
-except ImportError:
+except (ImportError, Exception):
     bs4 = None
 
 try:
     from playwright.sync_api import sync_playwright
 except (ImportError, Exception):
     sync_playwright = None
+
 
 
 def search_web(query: str, max_results: int = 5) -> List[Dict[str, str]]:

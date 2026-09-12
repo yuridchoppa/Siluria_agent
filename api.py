@@ -1,30 +1,43 @@
 import os
+import sys
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
 import shutil
 import uuid
+import traceback
 from typing import List, Optional
 
 from fastapi import FastAPI, File, Form, UploadFile, Request
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, Response, StreamingResponse
+from fastapi.responses import FileResponse, Response, StreamingResponse, HTMLResponse
 from pydantic import BaseModel
 
-from agent import SiluriaAgent
 from config import WORKSPACE_DIR, IS_SERVERLESS, DEFAULT_MODEL, GEMINI_API_KEY
 import db
+from agent import SiluriaAgent
 
-app = FastAPI()
+app = FastAPI(title="Siluria Agent")
 agent = SiluriaAgent()
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UI_DIR = os.path.join(BASE_DIR, "ui")
 UPLOAD_DIR = os.path.join(WORKSPACE_DIR, "uploads")
 
 try:
     os.makedirs(UPLOAD_DIR, exist_ok=True)
-except OSError:
+except Exception:
     pass
 
-from fastapi.responses import FileResponse, Response, StreamingResponse, HTMLResponse
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    err_tb = traceback.format_exc()
+    print(f"Unhandled error on {request.url.path}: {err_tb}")
+    return HTMLResponse(
+        content=f"<h1>Siluria Agent - Server Error</h1><pre>{err_tb}</pre>",
+        status_code=500,
+    )
 
 if os.path.isdir(UI_DIR):
     try:
@@ -41,6 +54,7 @@ async def health_check():
         "serverless": IS_SERVERLESS,
         "model": DEFAULT_MODEL,
     }
+
 
 
 class ChatRequest(BaseModel):

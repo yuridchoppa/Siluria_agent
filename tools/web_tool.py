@@ -80,7 +80,22 @@ def scrape_url(url: str, timeout: int = 15000) -> str:
     except Exception as e:
         print(f"AnakinScraper exception: {e}")
 
-    # Fallback to local basic HTTP
+    # Fallback attempt 1: Playwright headless browser if installed
+    if sync_playwright:
+        try:
+            with sync_playwright() as p:
+                browser = p.chromium.launch(headless=True)
+                context = browser.new_context()
+                page = context.new_page()
+                page.goto(url, wait_until="domcontentloaded", timeout=timeout)
+                html_content = page.content()
+                browser.close()
+                if html_content:
+                    return clean_html(html_content)[:12000]
+        except Exception:
+            pass
+
+    # Fallback attempt 2: local basic HTTP request
     try:
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",

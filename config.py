@@ -20,10 +20,14 @@ IS_SERVERLESS = bool(
     or not os.access(BASE_DIR, os.W_OK)
 )
 
-# API Keys
+# API Keys and Base URLs
 ANAKIN_API_KEY = (os.getenv("ANAKIN_API_KEY") or "").strip()
+ANAKIN_BASE_URL = (os.getenv("ANAKIN_BASE_URL") or "https://api.anakin.ai/v1").strip()
 GEMINI_API_KEY = (os.getenv("GEMINI_API_KEY") or "").strip()
 OPENAI_API_KEY = (os.getenv("OPENAI_API_KEY") or "").strip()
+
+# Image generation configuration
+IMAGE_GEN_MODEL = (os.getenv("IMAGE_GEN_MODEL") or "dall-e-3").strip()
 
 # AnakinScraper configuration (https://github.com/Anakin-Inc/anakin)
 ANAKIN_SCRAPER_URL = (os.getenv("ANAKIN_SCRAPER_URL") or "http://localhost:8080").rstrip("/")

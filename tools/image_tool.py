@@ -3,13 +3,20 @@ import requests
 from openai import OpenAI
 from config import OPENAI_API_KEY, IMAGE_GEN_MODEL, WORKSPACE_DIR
 
-client = OpenAI(api_key=OPENAI_API_KEY)
+
+def get_image_client() -> OpenAI:
+    key = os.getenv("OPENAI_API_KEY", OPENAI_API_KEY)
+    if not key:
+        raise ValueError("OPENAI_API_KEY is not set. Image generation requires an OpenAI API key.")
+    return OpenAI(api_key=key)
+
 
 def generate_image(prompt: str, filename: str) -> str:
     """
     Generate an image using DALL-E 3 based on a text prompt and save it to the workspace.
     """
     try:
+        client = get_image_client()
         response = client.images.generate(
             model=IMAGE_GEN_MODEL,
             prompt=prompt,

@@ -1,6 +1,6 @@
 # AnakinForge All-Rounder Agent
 
-An autonomous AI agent capable of:
+An autonomous AI agent powered by **Anakin.ai / Anakin.io API** capable of:
 - 🌐 Web browsing & live content retrieval
 - 🖼️ Image processing & generation (via DALL-E / Vision)
 - 🔬 Scientific reasoning & computation
@@ -11,11 +11,10 @@ An autonomous AI agent capable of:
 
 ## Stack
 - Python 3.11+
-- GEMINI API (Gemini Flash for reasoning + vision)
-- Playwright (web browsing)
-- Pillow (image processing)
+- Anakin.ai API (OpenAI-compatible endpoints for high performance LLMs like GPT-4o, Claude 3.5 Sonnet)
+- Playwright & BeautifulSoup (web browsing & scraping)
 - SymPy / SciPy / NumPy (scientific computation)
-- Rich (terminal UI)
+- FastAPI & Uvicorn (API & Web Server)
 
 ## Setup
 ```bash
@@ -30,8 +29,7 @@ python api.py
 
 Set your API key:
 ```bash
-export GEMINI_API_KEY=your_key_here
+export ANAKIN_API_KEY=your_anakin_key_here
 # or on Windows:
-set GEMINI_API_KEY=your_key_here
+set ANAKIN_API_KEY=your_anakin_key_here
 ```
-"# Siluria-AI"

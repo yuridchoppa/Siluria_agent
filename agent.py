@@ -1,16 +1,15 @@
 import os
 import sys
 import json
-from typing import List, Optional, Generator
+import base64
+from typing import List, Optional, Generator, Dict, Any
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
-
-from google import genai
-from google.genai import types
-from config import GEMINI_API_KEY, DEFAULT_MODEL, MODEL_FALLBACKS
+from openai import OpenAI
+from config import ANAKIN_API_KEY, ANAKIN_BASE_URL, DEFAULT_MODEL, MODEL_FALLBACKS
 
 from tools.web_tool import search_web, scrape_url
 from tools.science_tool import evaluate_math
@@ -25,10 +24,84 @@ TOOL_FUNCTIONS = {
     "execute_python": execute_python,
 }
 
-AVAILABLE_TOOLS = list(TOOL_FUNCTIONS.values())
+TOOLS_SCHEMA = [
+    {
+        "type": "function",
+        "function": {
+            "name": "search_web",
+            "description": "Search the live web using DuckDuckGo and return top search results.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "The search query to look up on the web."
+                    },
+                    "max_results": {
+                        "type": "integer",
+                        "description": "Maximum number of search results to return (default: 5).",
+                        "default": 5
+                    }
+                },
+                "required": ["query"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "scrape_url",
+            "description": "Scrape and extract clean text content from a web URL.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "description": "The URL to scrape text from."
+                    }
+                },
+                "required": ["url"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "evaluate_math",
+            "description": "Evaluate a mathematical expression, calculus, or physics formula using SymPy.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "expression": {
+                        "type": "string",
+                        "description": "The mathematical expression to evaluate (e.g., 'sin(pi/2) + integrate(x**2, x)')."
+                    }
+                },
+                "required": ["expression"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "execute_python",
+            "description": "Execute arbitrary Python code in the sandbox/workspace for calculations, data analysis, or scripting.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string",
+                        "description": "The Python code to execute."
+                    }
+                },
+                "required": ["code"]
+            }
+        }
+    }
+]
 
 SYSTEM_INSTRUCTION = (
-    "You are Siluria, a superior, autonomous, high-performance AI agent.\n"
+    "You are Siluria, an Anakin.io powered autonomous, high-performance AI agent.\n"
     "You can:\n"
     "1. Search the live web (search_web) and read web pages (scrape_url).\n"
     "2. Evaluate mathematics and physics (evaluate_math).\n"
@@ -47,25 +120,16 @@ class SiluriaAgent:
         self.model_name = DEFAULT_MODEL
 
     @property
-    def client(self) -> genai.Client:
+    def client(self) -> OpenAI:
         if self._client is None:
-            key = os.getenv("GEMINI_API_KEY", GEMINI_API_KEY)
+            key = os.getenv("ANAKIN_API_KEY", ANAKIN_API_KEY)
             if not key:
-                raise ValueError("GEMINI_API_KEY is not set. Please add GEMINI_API_KEY in Vercel Project Settings > Environment Variables.")
-            os.environ["GEMINI_API_KEY"] = key
-            self._client = genai.Client(api_key=key)
+                raise ValueError(
+                    "ANAKIN_API_KEY is not set. Please add ANAKIN_API_KEY in your environment variables or Vercel Project Settings."
+                )
+            base_url = os.getenv("ANAKIN_BASE_URL", ANAKIN_BASE_URL)
+            self._client = OpenAI(api_key=key, base_url=base_url)
         return self._client
-
-    def _config_with_tools(self) -> types.GenerateContentConfig:
-        return types.GenerateContentConfig(
-            system_instruction=SYSTEM_INSTRUCTION,
-            tools=AVAILABLE_TOOLS,
-        )
-
-    def _config_plain(self) -> types.GenerateContentConfig:
-        return types.GenerateContentConfig(
-            system_instruction=SYSTEM_INSTRUCTION,
-        )
 
     def _models(self) -> List[str]:
         seen, ordered = set(), []
@@ -75,19 +139,19 @@ class SiluriaAgent:
                 ordered.append(m)
         return ordered
 
-    def _run_tool(self, fc) -> str:
-        """Execute a Gemini function_call part and return the string result."""
-        fn = TOOL_FUNCTIONS.get(fc.name)
+    def _run_tool(self, name: str, args_json: str) -> str:
+        """Execute a tool function by name and arguments JSON, returning the string result."""
+        fn = TOOL_FUNCTIONS.get(name)
         if not fn:
-            return f"Unknown function: {fc.name}"
+            return f"Unknown function: {name}"
         try:
-            args = dict(fc.args) if fc.args else {}
+            args = json.loads(args_json) if args_json else {}
             result = fn(**args)
             if isinstance(result, (dict, list)):
                 return json.dumps(result, default=str)[:10000]
             return str(result)[:10000]
         except Exception as e:
-            return f"Tool error ({fc.name}): {e}"
+            return f"Tool error ({name}): {e}"
 
     def stream_agent(
         self,
@@ -97,48 +161,60 @@ class SiluriaAgent:
         links: Optional[List[str]] = None,
     ) -> Generator[str, None, None]:
         """
-        Drive the Gemini agentic loop with model fallback.
+        Drive the Anakin.io agentic loop with model fallback.
         Yields text chunks to stream to the client.
         """
         history = db.get_chat_history(session_id)
 
-        # Build conversation contents from history
-        contents: List[types.Content] = []
+        # Build conversation messages from history
+        messages: List[Dict[str, Any]] = [
+            {"role": "system", "content": SYSTEM_INSTRUCTION}
+        ]
+
         for entry in history:
-            role = "user" if entry["role"] == "user" else "model"
-            contents.append(
-                types.Content(role=role, parts=[types.Part.from_text(text=entry["content"])])
-            )
+            role = "user" if entry["role"] == "user" else "assistant"
+            messages.append({"role": role, "content": entry["content"]})
 
         # Build current user message
         query_text = user_query
         if links:
             query_text += "\n\n**Attached URLs:**\n" + "\n".join(f"- {l}" for l in links)
 
-        user_parts = [types.Part.from_text(text=query_text)]
+        # Handle multimodal / image files if attached
+        user_content: Any = query_text
+        image_parts = []
         for path in file_paths or []:
             if os.path.isfile(path):
-                try:
-                    up = self.client.files.upload(file=path)
-                    user_parts.append(
-                        types.Part.from_uri(file_uri=up.uri, mime_type=up.mime_type)
-                    )
-                except Exception:
-                    pass
+                ext = os.path.splitext(path)[1].lower()
+                if ext in [".png", ".jpg", ".jpeg", ".webp", ".gif"]:
+                    try:
+                        with open(path, "rb") as img_f:
+                            b64_data = base64.b64encode(img_f.read()).decode("utf-8")
+                            mime = f"image/{ext.replace('.', '')}"
+                            if ext == ".jpg":
+                                mime = "image/jpeg"
+                            image_parts.append({
+                                "type": "image_url",
+                                "image_url": {"url": f"data:{mime};base64,{b64_data}"}
+                            })
+                    except Exception:
+                        pass
 
-        contents.append(types.Content(role="user", parts=user_parts))
+        if image_parts:
+            user_content = [{"type": "text", "text": query_text}] + image_parts
+
+        messages.append({"role": "user", "content": user_content})
 
         last_error = None
         for model in self._models():
             chunks_sent: List[str] = []
             try:
-                for chunk_text in self._agentic_stream(model, list(contents)):
+                for chunk_text in self._agentic_stream(model, list(messages)):
                     chunks_sent.append(chunk_text)
                     yield chunk_text
 
                 # Persist full response
                 full_response = "".join(chunks_sent)
-                # Strip the tool-status markers from the saved text
                 import re
                 clean = re.sub(r'\n\n\*⚙ \[.*?\]\*\n\n', '', full_response)
                 self.model_name = model
@@ -148,8 +224,8 @@ class SiluriaAgent:
             except Exception as e:
                 err = str(e)
                 last_error = e
-                if any(k in err for k in ("429", "RESOURCE_EXHAUSTED", "503", "UNAVAILABLE", "404", "NOT_FOUND")):
-                    continue  # try next model
+                if any(k in err for k in ("429", "insufficient_quota", "503", "404", "model_not_found")):
+                    continue  # try next model fallback
                 yield f"\n[Error: {err}]"
                 return
 
@@ -159,66 +235,58 @@ class SiluriaAgent:
     def _agentic_stream(
         self,
         model: str,
-        contents: List[types.Content],
+        messages: List[Dict[str, Any]],
     ) -> Generator[str, None, None]:
         """
         Agentic loop for one model: tool-call rounds followed by a streamed final answer.
-        Raises on API errors so caller can switch model.
         """
         for _round in range(MAX_TOOL_ROUNDS):
-            # Blocking call to handle potential tool/function calls
-            response = self.client.models.generate_content(
+            # Check if model wants to call a tool
+            response = self.client.chat.completions.create(
                 model=model,
-                contents=contents,
-                config=self._config_with_tools(),
+                messages=messages,
+                tools=TOOLS_SCHEMA,
+                tool_choice="auto",
+                stream=False
             )
 
-            if not response.candidates:
-                break
+            choice = response.choices[0]
+            msg = choice.message
 
-            candidate = response.candidates[0]
-            parts = candidate.content.parts if candidate.content else []
-
-            text_parts = [p.text for p in parts if getattr(p, "text", None)]
-            fn_calls  = [p.function_call for p in parts if getattr(p, "function_call", None)]
-
-            if not fn_calls:
-                # No more tool calls — stream the final answer
-                # Re-run as a stream (without tools) so tokens appear instantly
-                final_contents = list(contents)
-                stream = self.client.models.generate_content_stream(
+            if not msg.tool_calls:
+                # No more tools requested. Stream final answer.
+                stream = self.client.chat.completions.create(
                     model=model,
-                    contents=final_contents,
-                    config=self._config_plain(),
+                    messages=messages,
+                    stream=True
                 )
                 got_any = False
                 for chunk in stream:
-                    if chunk.text:
+                    delta = chunk.choices[0].delta if chunk.choices else None
+                    if delta and delta.content:
                         got_any = True
-                        yield chunk.text
-                # Fallback: if streaming gave nothing, yield blocking text
-                if not got_any:
-                    yield "".join(text_parts)
-                return  # done
+                        yield delta.content
 
-            # Tool calls → execute, feed back, loop
-            tool_names = ", ".join(fc.name for fc in fn_calls)
+                if not got_any and msg.content:
+                    yield msg.content
+                return
+
+            # Tool calls encountered
+            tool_names = ", ".join([tc.function.name for tc in msg.tool_calls])
             yield f"\n\n*⚙ [{tool_names}]*\n\n"
 
-            # Append model's function-call turn
-            contents.append(candidate.content)
+            # Append assistant message with tool calls
+            messages.append(msg.model_dump())
 
-            # Execute all tool calls
-            result_parts = []
-            for fc in fn_calls:
-                result_str = self._run_tool(fc)
-                result_parts.append(
-                    types.Part.from_function_response(
-                        name=fc.name,
-                        response={"result": result_str},
-                    )
-                )
+            # Execute tool calls and append results
+            for tc in msg.tool_calls:
+                fn_name = tc.function.name
+                fn_args = tc.function.arguments
+                result_str = self._run_tool(fn_name, fn_args)
 
-            # Feed results back as a user turn
-            contents.append(types.Content(role="user", parts=result_parts))
-            # Continue loop — model will now process the tool results
+                messages.append({
+                    "role": "tool",
+                    "tool_call_id": tc.id,
+                    "name": fn_name,
+                    "content": result_str
+                })

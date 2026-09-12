@@ -15,7 +15,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, Response, StreamingResponse, HTMLResponse
 from pydantic import BaseModel
 
-from config import WORKSPACE_DIR, IS_SERVERLESS, DEFAULT_MODEL, GEMINI_API_KEY
+from config import WORKSPACE_DIR, IS_SERVERLESS, DEFAULT_MODEL, ANAKIN_API_KEY
 import db
 from agent import SiluriaAgent
 
@@ -50,7 +50,7 @@ if os.path.isdir(UI_DIR):
 async def health_check():
     return {
         "status": "online",
-        "has_api_key": bool(os.getenv("GEMINI_API_KEY", GEMINI_API_KEY)),
+        "has_api_key": bool(os.getenv("ANAKIN_API_KEY", ANAKIN_API_KEY)),
         "serverless": IS_SERVERLESS,
         "model": DEFAULT_MODEL,
     }

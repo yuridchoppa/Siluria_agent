@@ -39,18 +39,24 @@ if GEMINI_API_KEY:
     LLM_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai/"
     DEFAULT_MODEL = (os.getenv("DEFAULT_MODEL") or "gemini-flash-latest").strip()
     raw_fallbacks = (os.getenv("MODEL_FALLBACKS") or "gemini-flash-latest,gemini-3-flash-preview,gemini-3.1-flash-lite-preview").strip()
+elif ANAKIN_API_KEY:
+    ACTIVE_PROVIDER = "anakin"
+    LLM_API_KEY = ANAKIN_API_KEY
+    LLM_BASE_URL = ANAKIN_BASE_URL
+    DEFAULT_MODEL = (os.getenv("DEFAULT_MODEL") or "gpt-4o").strip()
+    raw_fallbacks = (os.getenv("MODEL_FALLBACKS") or "gpt-4o,claude-3-5-sonnet-20241022").strip()
 elif OPENAI_API_KEY:
     ACTIVE_PROVIDER = "openai"
     LLM_API_KEY = OPENAI_API_KEY
     LLM_BASE_URL = (os.getenv("OPENAI_BASE_URL") or "https://api.openai.com/v1").strip()
     DEFAULT_MODEL = (os.getenv("DEFAULT_MODEL") or "gpt-4o-mini").strip()
     raw_fallbacks = (os.getenv("MODEL_FALLBACKS") or "gpt-4o-mini,gpt-4o").strip()
-elif ANAKIN_API_KEY and os.getenv("ANAKIN_BASE_URL"):
-    ACTIVE_PROVIDER = "anakin"
-    LLM_API_KEY = ANAKIN_API_KEY
-    LLM_BASE_URL = os.getenv("ANAKIN_BASE_URL").strip()
+elif os.getenv("LLM_API_KEY"):
+    ACTIVE_PROVIDER = "custom"
+    LLM_API_KEY = os.getenv("LLM_API_KEY").strip()
+    LLM_BASE_URL = (os.getenv("LLM_BASE_URL") or "").strip()
     DEFAULT_MODEL = (os.getenv("DEFAULT_MODEL") or "gpt-4o").strip()
-    raw_fallbacks = (os.getenv("MODEL_FALLBACKS") or "gpt-4o,claude-3-5-sonnet-20241022").strip()
+    raw_fallbacks = (os.getenv("MODEL_FALLBACKS") or DEFAULT_MODEL).strip()
 else:
     ACTIVE_PROVIDER = "none"
     LLM_API_KEY = ""

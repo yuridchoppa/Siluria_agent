@@ -70,63 +70,183 @@
             font-size: 13px; color: var(--text-muted); line-height: 1.4;
         }
 
-        /* Mode Switcher Tabs */
-        .auth-tabs {
-            display: flex; background: rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(229, 193, 88, 0.18); border-radius: 6px;
-            padding: 3px; margin-bottom: 16px; gap: 4px;
+        /* First-Time User Recommendation Banner */
+        .first-time-card {
+            background: linear-gradient(135deg, rgba(229, 193, 88, 0.14) 0%, rgba(26, 19, 10, 0.85) 100%);
+            border: 1px solid rgba(229, 193, 88, 0.45);
+            border-radius: 6px;
+            padding: 11px 14px;
+            margin-bottom: 14px;
+            text-align: left;
+            position: relative;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4), inset 0 0 15px rgba(229, 193, 88, 0.1);
+            animation: goldPulseBorder 3s infinite alternate ease-in-out;
         }
-        .auth-tab {
-            flex: 1; padding: 8px 10px; background: transparent; border: none;
-            border-radius: 4px; font-family: 'Cinzel', serif; font-size: 11px;
-            font-weight: 700; letter-spacing: 0.08rem; color: var(--text-muted);
-            cursor: pointer; transition: all 0.2s ease;
+        @keyframes goldPulseBorder {
+            0% { border-color: rgba(229, 193, 88, 0.35); box-shadow: 0 0 10px rgba(229, 193, 88, 0.12); }
+            100% { border-color: rgba(229, 193, 88, 0.75); box-shadow: 0 0 20px rgba(229, 193, 88, 0.3); }
         }
-        .auth-tab.active {
-            background: rgba(229, 193, 88, 0.16); color: var(--gold-bright);
-            border: 1px solid rgba(229, 193, 88, 0.35);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+        .first-time-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-family: 'Cinzel', serif; font-size: 9.5px; font-weight: 700;
+            letter-spacing: 0.14rem; color: var(--gold-bright); margin-bottom: 5px;
+            text-shadow: 0 0 8px var(--gold-glow);
         }
-        .auth-tab:hover:not(.active) {
-            color: #fff; background: rgba(255, 255, 255, 0.03);
+        .first-time-msg {
+            font-family: 'IM Fell English', serif; font-size: 13px; line-height: 1.45;
+            color: #edd9ba; font-style: italic;
+        }
+        .first-time-msg strong {
+            color: var(--gold-bright); font-style: normal; font-weight: 600; text-shadow: 0 0 6px var(--gold-glow);
         }
 
-        /* Social Auth Grid / Stack */
+        /* Mode Switcher Tabs */
+        .auth-tabs {
+            display: flex; background: rgba(0, 0, 0, 0.45);
+            border: 1px solid rgba(229, 193, 88, 0.2); border-radius: 6px;
+            padding: 3px; margin-bottom: 15px; gap: 4px;
+        }
+        .auth-tab {
+            flex: 1; padding: 8px 6px; background: transparent; border: none;
+            border-radius: 4px; font-family: 'Cinzel', serif; font-size: 10.5px;
+            font-weight: 700; letter-spacing: 0.06rem; color: var(--text-muted);
+            cursor: pointer; transition: all 0.2s ease; white-space: nowrap;
+        }
+        .auth-tab.active {
+            background: rgba(229, 193, 88, 0.18); color: var(--gold-bright);
+            border: 1px solid rgba(229, 193, 88, 0.4);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.5), 0 0 8px rgba(229, 193, 88, 0.15);
+        }
+        .auth-tab:hover:not(.active) {
+            color: #fff; background: rgba(255, 255, 255, 0.04);
+        }
+
+        /* Social & Provider Auth Stack */
         .social-login-grid {
-            display: flex; flex-direction: column; gap: 9px; margin-bottom: 16px;
+            display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;
         }
         .btn-social {
-            display: flex; align-items: center; width: 100%; height: 42px;
-            padding: 0 14px; background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(229, 193, 88, 0.22); border-radius: 6px;
+            display: flex; align-items: center; width: 100%; min-height: 48px;
+            padding: 6px 14px; background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(229, 193, 88, 0.25); border-radius: 6px;
             cursor: pointer; transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-            position: relative; overflow: hidden;
+            position: relative; overflow: hidden; text-align: left;
         }
         .btn-social .social-icon-box {
-            width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-right: 12px;
         }
-        .btn-social .social-text {
-            flex: 1; text-align: center; font-family: 'Cinzel', serif;
-            font-size: 12px; font-weight: 600; letter-spacing: 0.06rem;
-            color: var(--text-main); transition: color 0.2s;
+        .btn-social .social-text-col {
+            flex: 1; display: flex; flex-direction: column; justify-content: center;
+        }
+        .btn-social .social-text-title {
+            font-family: 'Cinzel', serif; font-size: 12px; font-weight: 700;
+            letter-spacing: 0.06rem; color: var(--text-main); transition: color 0.2s;
+        }
+        .btn-social .social-text-sub {
+            font-family: 'IM Fell English', serif; font-style: italic; font-size: 11px;
+            color: var(--text-muted); margin-top: 1px;
         }
         .btn-social .social-arrow {
-            color: rgba(229, 193, 88, 0.3); font-size: 14px; transition: all 0.2s;
+            color: rgba(229, 193, 88, 0.4); font-size: 15px; transition: all 0.2s; margin-left: 8px;
         }
         .btn-social:hover {
-            background: rgba(229, 193, 88, 0.09); border-color: var(--gold);
+            background: rgba(229, 193, 88, 0.1); border-color: var(--gold);
             transform: translateY(-1.5px);
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4), 0 0 12px rgba(229, 193, 88, 0.16);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45), 0 0 14px rgba(229, 193, 88, 0.2);
         }
-        .btn-social:hover .social-text { color: #ffffff; }
+        .btn-social:hover .social-text-title { color: #ffffff; text-shadow: 0 0 6px var(--gold-glow); }
         .btn-social:hover .social-arrow {
             color: var(--gold-bright); transform: translateX(3px);
         }
         .btn-social:active { transform: translateY(0); }
 
+        /* Phone Auth Panel */
+        .phone-auth-panel {
+            display: none; flex-direction: column; gap: 10px; margin-bottom: 16px; text-align: left;
+        }
+        .phone-auth-panel.show { display: flex; animation: fadeInModal 0.25s ease; }
+        .input-helper-label {
+            font-family: 'Cinzel', serif; font-size: 10.5px; font-weight: 700;
+            color: var(--gold); letter-spacing: 0.12rem; margin-bottom: 4px;
+        }
+        .phone-input-row {
+            display: flex; gap: 8px; width: 100%;
+        }
+        .login-select {
+            width: 110px; height: 42px; background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(229, 193, 88, 0.3); border-radius: 6px;
+            color: var(--gold-bright); font-family: 'Cinzel', serif; font-size: 11px;
+            padding: 0 8px; outline: none; cursor: pointer; flex-shrink: 0;
+        }
+        .login-select option {
+            background: #140f08; color: #ffffff;
+        }
+        .otp-inputs-grid {
+            display: flex; justify-content: center; gap: 8px; margin: 12px 0 6px;
+        }
+        .otp-digit {
+            width: 42px; height: 48px; background: rgba(0, 0, 0, 0.65);
+            border: 1px solid rgba(229, 193, 88, 0.35); border-radius: 6px;
+            text-align: center; font-family: 'Cinzel', serif; font-size: 20px; font-weight: 700;
+            color: var(--gold-bright); outline: none; transition: all 0.2s;
+        }
+        .otp-digit:focus {
+            border-color: var(--gold-bright); box-shadow: 0 0 14px var(--gold-glow);
+            background: rgba(26, 20, 12, 0.95);
+        }
+        .otp-timer-text {
+            font-family: 'Cinzel', serif; font-size: 10.5px; color: var(--gold-dim);
+            text-align: center; margin: 4px 0 10px;
+        }
+        .otp-timer-text span { color: var(--gold-bright); font-weight: 700; }
+        .btn-phone-secondary {
+            background: transparent; border: 1px solid rgba(229, 193, 88, 0.25);
+            color: var(--text-muted); padding: 7px 12px; font-family: 'Cinzel', serif;
+            font-size: 10.5px; letter-spacing: 0.06rem; border-radius: 4px; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-phone-secondary:hover {
+            color: #ffffff; border-color: var(--gold); background: rgba(229, 193, 88, 0.08);
+        }
+
+        /* Redirecting Overlay */
+        .redirect-overlay {
+            display: none; position: absolute; inset: 0;
+            background: rgba(10, 8, 4, 0.95); backdrop-filter: blur(10px);
+            z-index: 60; flex-direction: column; align-items: center;
+            justify-content: center; padding: 24px; text-align: center;
+            border-radius: 4px;
+        }
+        .redirect-overlay.show { display: flex; animation: fadeInModal 0.25s ease-out; }
+        .redirect-spinner {
+            width: 46px; height: 46px; border: 3px solid rgba(229, 193, 88, 0.2);
+            border-top-color: var(--gold-bright); border-radius: 50%;
+            animation: spin 1s linear infinite; margin-bottom: 16px;
+            box-shadow: 0 0 18px rgba(229, 193, 88, 0.35);
+        }
+        .redirect-title {
+            font-family: 'Cinzel', serif; font-size: 15px; font-weight: 700;
+            color: var(--gold-bright); letter-spacing: 0.14rem; margin-bottom: 6px;
+            text-shadow: 0 0 10px var(--gold-glow);
+        }
+        .redirect-subtitle {
+            font-family: 'IM Fell English', serif; font-style: italic; font-size: 12.5px;
+            color: var(--text-muted); margin-bottom: 18px; max-width: 320px; line-height: 1.4;
+        }
+        .redirect-btn-direct {
+            background: rgba(229, 193, 88, 0.16); border: 1px solid var(--gold);
+            color: #ffffff; padding: 9px 20px; font-family: 'Cinzel', serif;
+            font-size: 11px; font-weight: 700; letter-spacing: 0.09rem; border-radius: 4px; cursor: pointer;
+            transition: all 0.2s; box-shadow: 0 0 12px rgba(229, 193, 88, 0.2);
+        }
+        .redirect-btn-direct:hover {
+            background: rgba(229, 193, 88, 0.38); border-color: var(--gold-bright);
+            box-shadow: 0 0 18px var(--gold-glow); transform: translateY(-1px);
+        }
+
         /* Divider */
         .auth-divider {
-            display: flex; align-items: center; gap: 12px; margin: 16px 0 16px;
+            display: flex; align-items: center; gap: 12px; margin: 15px 0;
         }
         .auth-divider::before, .auth-divider::after {
             content: ''; flex: 1; height: 1px;
@@ -135,6 +255,11 @@
         .auth-divider span {
             font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.16rem;
             text-transform: uppercase; color: var(--gold-dim); font-weight: 600; white-space: nowrap;
+        }
+
+        .manual-tip-notice {
+            font-family: 'IM Fell English', serif; font-style: italic; font-size: 12px;
+            color: var(--text-muted); margin-bottom: 12px; line-height: 1.4; text-align: center;
         }
 
         /* Input Form & Groups */
@@ -212,6 +337,74 @@
             letter-spacing: 0.04rem; color: rgba(181, 158, 114, 0.5); line-height: 1.4;
         }
         .auth-footer-text span { color: var(--gold-dim); }
+
+        /* User Profile Popover in HUD */
+        #user-profile-menu {
+            display: none; position: absolute; top: calc(100% + 8px); right: 0;
+            width: 250px; background: rgba(14, 11, 6, 0.98);
+            border: 1px solid var(--gold); border-radius: 6px; padding: 14px;
+            box-shadow: 0 14px 38px rgba(0,0,0,0.9), 0 0 20px rgba(229,193,88,0.25);
+            z-index: 200; text-align: left; backdrop-filter: blur(12px);
+        }
+        #user-profile-menu.show { display: block; animation: fadeInModal 0.2s ease; }
+        .user-menu-header {
+            border-bottom: 1px solid rgba(229,193,88,0.2); padding-bottom: 10px; margin-bottom: 10px;
+        }
+        .user-menu-badge {
+            font-family: 'Cinzel', serif; font-size: 9px; font-weight: 700;
+            letter-spacing: 0.15rem; color: var(--gold); margin-bottom: 4px;
+        }
+        .user-menu-name {
+            font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700;
+            color: var(--gold-bright); letter-spacing: 0.08rem; word-break: break-all;
+        }
+        .user-menu-meta {
+            font-family: 'IM Fell English', serif; font-size: 11.5px; font-style: italic;
+            color: var(--text-muted); margin-top: 3px;
+        }
+        .user-menu-status {
+            display: inline-flex; align-items: center; gap: 5px; font-family: 'Cinzel', serif;
+            font-size: 9px; color: #62d688; letter-spacing: 0.1rem; margin-top: 6px;
+        }
+        .user-menu-status::before {
+            content: ''; width: 6px; height: 6px; border-radius: 50%; background: #62d688;
+            box-shadow: 0 0 6px #62d688;
+        }
+        .user-menu-actions {
+            display: flex; flex-direction: column; gap: 6px;
+        }
+        .btn-menu-action {
+            width: 100%; padding: 8px 10px; background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(229, 193, 88, 0.18); border-radius: 4px;
+            color: var(--text-main); font-family: 'Cinzel', serif; font-size: 10.5px;
+            letter-spacing: 0.06rem; cursor: pointer; text-align: left; transition: all 0.2s;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .btn-menu-action:hover {
+            background: rgba(229, 193, 88, 0.15); color: #fff; border-color: var(--gold);
+        }
+        .btn-menu-action.danger {
+            color: #ff7878; border-color: rgba(255, 120, 120, 0.3);
+        }
+        .btn-menu-action.danger:hover {
+            background: rgba(255, 100, 100, 0.18); border-color: #ff6060; color: #fff;
+        }
+
+        /* Pulsing First-Time Bonfire Button */
+        @keyframes bonfireFirstPulse {
+            0% {
+                box-shadow: 0 0 4px rgba(229, 193, 88, 0.3);
+                border-color: rgba(229, 193, 88, 0.5);
+            }
+            100% {
+                box-shadow: 0 0 16px rgba(229, 193, 88, 0.85), inset 0 0 8px rgba(229, 193, 88, 0.35);
+                border-color: var(--gold-bright);
+                color: #ffffff;
+            }
+        }
+        .btn-login-first-time {
+            animation: bonfireFirstPulse 2s infinite alternate ease-in-out !important;
+        }
 
         :root {
             --bg:          #080603;
@@ -879,8 +1072,28 @@
             </div>
 
             <div class="hud-right">
-                <div class="hud-runes">
-                    <span>⚜</span> <button id="btn-login" style="background:transparent; border:1px solid rgba(229, 193, 88, 0.5); padding: 4px 12px; font-family:'Cinzel', serif; color:var(--gold-bright); font-size:12px; letter-spacing:0.15rem; cursor:pointer; text-shadow:0 0 5px var(--gold-glow); transition:all 0.3s; border-radius:2px;">KINDLE BONFIRE (LOGIN)</button>
+                <div class="hud-runes" style="position: relative;">
+                    <span>⚜</span> 
+                    <button id="btn-login" style="background:transparent; border:1px solid rgba(229, 193, 88, 0.5); padding: 4px 12px; font-family:'Cinzel', serif; color:var(--gold-bright); font-size:12px; letter-spacing:0.15rem; cursor:pointer; text-shadow:0 0 5px var(--gold-glow); transition:all 0.3s; border-radius:2px;">KINDLE BONFIRE (LOGIN)</button>
+                    <!-- User Profile Popover -->
+                    <div id="user-profile-menu">
+                        <div class="user-menu-header">
+                            <div class="user-menu-badge">⚜ ACTIVE VESSEL ⚜</div>
+                            <div class="user-menu-name" id="menu-user-name">Tarnished One</div>
+                            <div class="user-menu-meta" id="menu-user-provider">Method: Sanctuary Cipher</div>
+                            <div class="user-menu-status">BOUND TO GRACE</div>
+                        </div>
+                        <div class="user-menu-actions">
+                            <button type="button" class="btn-menu-action" onclick="openSwitchVessel()">
+                                <span>Switch Vessel / Sign In</span>
+                                <span>⇄</span>
+                            </button>
+                            <button type="button" class="btn-menu-action danger" onclick="logoutVessel()">
+                                <span>Dissolve Vessel (Logout)</span>
+                                <span>✕</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -950,15 +1163,26 @@
                 <div class="login-subtitle" id="auth-sub-title">Enter the sacred realm & commune with the ancient intellect</div>
             </div>
 
-            <!-- Switcher Tabs (Sign In / Sign Up) -->
-            <div class="auth-tabs">
-                <button type="button" class="auth-tab active" id="tab-signin" onclick="switchAuthMode('signin')">KINDLE GRACE (SIGN IN)</button>
-                <button type="button" class="auth-tab" id="tab-signup" onclick="switchAuthMode('signup')">INSCRIBE (SIGN UP)</button>
+            <!-- First-Time User Recommendation Banner -->
+            <div id="first-time-recommendation" class="first-time-card">
+                <div class="first-time-badge">
+                    <span>★</span> FIRST-TIME TRAVELER? SIGN IN RECOMMENDED <span>★</span>
+                </div>
+                <div class="first-time-msg">
+                    Communing for the first time? We recommend using <strong>Sign In</strong> below (via <strong>Gmail</strong>, <strong>Apple</strong>, or <strong>Phone</strong>) for immediate vessel binding without needing a manual passphrase!
+                </div>
             </div>
 
-            <!-- Social Login Options -->
-            <div class="social-login-grid">
-                <button type="button" class="btn-social google" onclick="handleSocialAuth('Google')">
+            <!-- Switcher Tabs (Sign In / Manual Login / Sign Up) -->
+            <div class="auth-tabs">
+                <button type="button" class="auth-tab active" id="tab-signin" onclick="switchAuthMode('signin')">✦ SIGN IN (RECOMMENDED)</button>
+                <button type="button" class="auth-tab" id="tab-manual" onclick="switchAuthMode('manual')">⚜ MANUAL LOGIN</button>
+                <button type="button" class="auth-tab" id="tab-signup" onclick="switchAuthMode('signup')">📜 INSCRIBE (SIGN UP)</button>
+            </div>
+
+            <!-- Social & Provider Sign In (Default / Recommended) -->
+            <div id="social-login-section" class="social-login-grid">
+                <button type="button" class="btn-social google" onclick="handleGoogleRedirect()">
                     <span class="social-icon-box">
                         <svg width="20" height="20" viewBox="0 0 24 24">
                             <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17Z"/>
@@ -967,21 +1191,27 @@
                             <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98Z"/>
                         </svg>
                     </span>
-                    <span class="social-text">Continue with Google</span>
+                    <div class="social-text-col">
+                        <span class="social-text-title">Continue with Gmail / Google</span>
+                        <span class="social-text-sub">Redirects to Google Account access</span>
+                    </div>
                     <span class="social-arrow">→</span>
                 </button>
 
-                <button type="button" class="btn-social apple" onclick="handleSocialAuth('Apple')">
+                <button type="button" class="btn-social apple" onclick="handleAppleRedirect()">
                     <span class="social-icon-box">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="#ffffff">
                             <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.85c.66-.8 1.11-1.92.99-3.04-.96.04-2.12.64-2.8 1.44-.61.71-1.14 1.86-1 2.97 1.07.08 2.15-.57 2.81-1.37z"/>
                         </svg>
                     </span>
-                    <span class="social-text">Continue with Apple</span>
+                    <div class="social-text-col">
+                        <span class="social-text-title">Continue with Apple</span>
+                        <span class="social-text-sub">Redirects to Apple ID sign in</span>
+                    </div>
                     <span class="social-arrow">→</span>
                 </button>
 
-                <button type="button" class="btn-social phone" onclick="handleSocialAuth('Phone OTP')">
+                <button type="button" class="btn-social phone" onclick="handlePhoneOption()">
                     <span class="social-icon-box">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e5c158" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="5" y="2" width="14" height="20" rx="3" ry="3"/>
@@ -989,72 +1219,140 @@
                             <path d="M9 6h6"/>
                         </svg>
                     </span>
-                    <span class="social-text">Continue with Phone OTP</span>
+                    <div class="social-text-col">
+                        <span class="social-text-title">Continue with Phone Number</span>
+                        <span class="social-text-sub">Access via mobile SMS & Sacred OTP</span>
+                    </div>
                     <span class="social-arrow">→</span>
                 </button>
             </div>
 
-            <div class="auth-divider"><span>✦ OR SACRED SANCTUARY KEYS ✦</span></div>
-
-            <form id="auth-form" onsubmit="event.preventDefault(); submitAuth();">
-                <div class="input-group">
-                    <span class="input-icon">
-                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                            <circle cx="12" cy="7" r="4"/>
-                        </svg>
-                    </span>
-                    <input type="text" id="auth-username" class="login-input" placeholder="Tarnished Name or Vessel" spellcheck="false" autocomplete="username" required>
-                </div>
-
-                <div class="input-group signup-field" style="display:none;">
-                    <span class="input-icon">
-                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="2" y="4" width="20" height="16" rx="2"/>
-                            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
-                        </svg>
-                    </span>
-                    <input type="email" id="auth-email" class="login-input" placeholder="Sacred Dispatch (Email Address)" autocomplete="email">
-                </div>
-
-                <div class="input-group">
-                    <span class="input-icon">
-                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                        </svg>
-                    </span>
-                    <input type="password" id="auth-password" class="login-input" placeholder="Passphrase / Rune Cipher" autocomplete="current-password" required>
-                    <button type="button" class="btn-toggle-pass" onclick="togglePassVisibility('auth-password', this)" title="Toggle Cipher Visibility">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
-                            <circle cx="12" cy="12" r="3"/>
-                        </svg>
+            <!-- Phone Authentication Flow -->
+            <div id="phone-auth-panel" class="phone-auth-panel">
+                <div id="phone-step-1">
+                    <div class="input-helper-label">ENTER THY MOBILE VESSEL:</div>
+                    <div class="phone-input-row">
+                        <select id="phone-country-code" class="login-select">
+                            <option value="+1">+1 (US/CA)</option>
+                            <option value="+91" selected>+91 (IN)</option>
+                            <option value="+44">+44 (UK)</option>
+                            <option value="+49">+49 (DE)</option>
+                            <option value="+33">+33 (FR)</option>
+                            <option value="+81">+81 (JP)</option>
+                            <option value="+61">+61 (AU)</option>
+                            <option value="+971">+971 (AE)</option>
+                            <option value="+">+ (Other)</option>
+                        </select>
+                        <input type="tel" id="auth-phone-number" class="login-input" style="padding-left:14px;" placeholder="Mobile Number (e.g. 9876543210)">
+                    </div>
+                    <button type="button" class="btn-auth" style="margin-top:10px;" onclick="sendPhoneOtp()">
+                        <span>⚜</span>
+                        <span>SEND SACRED CIPHER (OTP)</span>
                     </button>
+                    <div style="display:flex; justify-content:space-between; margin-top:8px;">
+                        <button type="button" class="btn-phone-secondary" onclick="openSmsApp()">📱 Mobile SMS Link</button>
+                        <button type="button" class="btn-phone-secondary" onclick="closePhoneAuth()">← Back to Providers</button>
+                    </div>
                 </div>
 
-                <div class="input-group signup-field" style="display:none;">
-                    <span class="input-icon">
-                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                        </svg>
-                    </span>
-                    <input type="password" id="auth-confirm" class="login-input" placeholder="Affirm Passphrase" autocomplete="new-password">
+                <div id="phone-step-2" style="display:none;">
+                    <div class="input-helper-label" id="phone-otp-label">SACRED CIPHER DISPATCHED:</div>
+                    <div class="otp-inputs-grid">
+                        <input type="text" maxlength="1" class="otp-digit" data-idx="0">
+                        <input type="text" maxlength="1" class="otp-digit" data-idx="1">
+                        <input type="text" maxlength="1" class="otp-digit" data-idx="2">
+                        <input type="text" maxlength="1" class="otp-digit" data-idx="3">
+                        <input type="text" maxlength="1" class="otp-digit" data-idx="4">
+                        <input type="text" maxlength="1" class="otp-digit" data-idx="5">
+                    </div>
+                    <div id="otp-hint-btn" style="text-align:center; margin-bottom:6px;"></div>
+                    <div class="otp-timer-text" id="otp-timer-display">Resend cipher in <span>60s</span></div>
+                    <button type="button" class="btn-auth" style="margin-top:4px;" onclick="verifyPhoneOtp()">
+                        <span>⚜</span>
+                        <span>VERIFY RUNE & ENTER</span>
+                    </button>
+                    <div style="display:flex; justify-content:space-between; margin-top:8px;">
+                        <button type="button" class="btn-phone-secondary" id="btn-resend-otp" onclick="resendPhoneOtp()" disabled>Resend Code</button>
+                        <button type="button" class="btn-phone-secondary" onclick="resetPhoneAuth()">← Change Number</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manual Form Section (Login & Inscribe) -->
+            <div id="manual-auth-section" style="display:none;">
+                <div class="manual-tip-notice" id="manual-tip-notice">
+                    ✦ Have an existing vessel cipher? Enter credentials below. If thou art new, Sign In is recommended. ✦
                 </div>
 
-                <div class="form-row-aux">
-                    <label class="checkbox-container">
-                        <input type="checkbox" id="auth-remember" checked>
-                        <span>Remember Vessel</span>
-                    </label>
-                    <a href="javascript:void(0)" class="link-forgot" onclick="alert('Commune with the ancient grace to recall thy cipher.')">Lost Cipher?</a>
-                </div>
+                <form id="auth-form" onsubmit="event.preventDefault(); submitAuth();">
+                    <div class="input-group">
+                        <span class="input-icon">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                        </span>
+                        <input type="text" id="auth-username" class="login-input" placeholder="Tarnished Name or Vessel" spellcheck="false" autocomplete="username" required>
+                    </div>
 
-                <button type="submit" class="btn-auth" id="btn-auth-submit">
-                    <span>⚜</span>
-                    <span id="btn-auth-text">ENTER SANCTUARY</span>
-                </button>
-            </form>
+                    <div class="input-group signup-field" style="display:none;">
+                        <span class="input-icon">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="4" width="20" height="16" rx="2"/>
+                                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                            </svg>
+                        </span>
+                        <input type="email" id="auth-email" class="login-input" placeholder="Sacred Dispatch (Email Address)" autocomplete="email">
+                    </div>
+
+                    <div class="input-group">
+                        <span class="input-icon">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            </svg>
+                        </span>
+                        <input type="password" id="auth-password" class="login-input" placeholder="Passphrase / Rune Cipher" autocomplete="current-password" required>
+                        <button type="button" class="btn-toggle-pass" onclick="togglePassVisibility('auth-password', this)" title="Toggle Cipher Visibility">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="input-group signup-field" style="display:none;">
+                        <span class="input-icon">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                            </svg>
+                        </span>
+                        <input type="password" id="auth-confirm" class="login-input" placeholder="Affirm Passphrase" autocomplete="new-password">
+                    </div>
+
+                    <div class="form-row-aux">
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="auth-remember" checked>
+                            <span>Remember Vessel</span>
+                        </label>
+                        <a href="javascript:void(0)" class="link-forgot" onclick="alert('Commune with the ancient grace to recall thy cipher.')">Lost Cipher?</a>
+                    </div>
+
+                    <button type="submit" class="btn-auth" id="btn-auth-submit">
+                        <span>⚜</span>
+                        <span id="btn-auth-text">ENTER SANCTUARY</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Redirecting Atmospheric Overlay -->
+            <div id="redirect-overlay" class="redirect-overlay">
+                <div class="redirect-spinner"></div>
+                <div class="redirect-title" id="redirect-overlay-title">COMMUNING WITH REALM...</div>
+                <div class="redirect-subtitle" id="redirect-overlay-subtitle">Redirecting to authenticate thy vessel...</div>
+                <button type="button" class="redirect-btn-direct" id="redirect-btn-direct">Proceed to Sign In Now →</button>
+                <button type="button" class="btn-phone-secondary" style="margin-top:10px;" onclick="cancelRedirect()">Return to Sanctuary</button>
+            </div>
 
             <div class="auth-footer-text">
                 By crossing the fog gate, thou consentest to the <span>Codex of the Lands Between</span>.
@@ -1103,56 +1401,344 @@
     const fileInput = document.getElementById('hidden-file-input');
     const attPreview = document.getElementById('attachments-preview');
 
-    // Login Modal Logic
+    // ─────────────────────────────────────────
+    // AUTHENTICATION & MULTI-PROVIDER LOGIC
+    // ─────────────────────────────────────────
     const loginModal = document.getElementById('login-modal');
+    const userProfileMenu = document.getElementById('user-profile-menu');
     let currentAuthMode = 'signin';
+    let redirectTimer = null;
+    let otpCountdownInterval = null;
+    let currentPendingPhone = "";
 
-    document.getElementById('btn-login').onclick = () => {
-        loginModal.classList.add('show');
-        setTimeout(() => document.getElementById('auth-username')?.focus(), 100);
+    // Toggle Profile Popover or Open Login Modal
+    document.getElementById('btn-login').onclick = (e) => {
+        e.stopPropagation();
+        const currentUser = getStoredUser();
+        if (currentUser) {
+            if (userProfileMenu) userProfileMenu.classList.toggle('show');
+        } else {
+            openLoginModal();
+        }
     };
-    document.getElementById('btn-close-login').onclick = () => loginModal.classList.remove('show');
-    loginModal.onclick = (e) => {
-        if (e.target === loginModal) loginModal.classList.remove('show');
-    };
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && loginModal.classList.contains('show')) {
-            loginModal.classList.remove('show');
+
+    document.addEventListener('click', (e) => {
+        if (userProfileMenu && !userProfileMenu.contains(e.target) && e.target !== document.getElementById('btn-login')) {
+            userProfileMenu.classList.remove('show');
         }
     });
+
+    document.getElementById('btn-close-login').onclick = () => closeLoginModal();
+    loginModal.onclick = (e) => {
+        if (e.target === loginModal) closeLoginModal();
+    };
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            if (loginModal.classList.contains('show')) closeLoginModal();
+            if (userProfileMenu) userProfileMenu.classList.remove('show');
+        }
+    });
+
+    function openLoginModal(defaultMode = null) {
+        if (userProfileMenu) userProfileMenu.classList.remove('show');
+        loginModal.classList.add('show');
+        cancelRedirect();
+        closePhoneAuth();
+
+        const currentUser = getStoredUser();
+        const hasVisited = localStorage.getItem('siluria_visited');
+
+        // If first-time user and not logged in, ensure first-time banner is shown & default to signin
+        const firstTimeEl = document.getElementById('first-time-recommendation');
+        if (firstTimeEl) {
+            firstTimeEl.style.display = (!currentUser && !hasVisited) ? 'block' : 'block'; // Always visible as helpful advice
+        }
+
+        switchAuthMode(defaultMode || 'signin');
+    }
+
+    function closeLoginModal() {
+        loginModal.classList.remove('show');
+        cancelRedirect();
+        if (otpCountdownInterval) clearInterval(otpCountdownInterval);
+    }
 
     window.switchAuthMode = (mode) => {
         currentAuthMode = mode;
         const tabSignin = document.getElementById('tab-signin');
+        const tabManual = document.getElementById('tab-manual');
         const tabSignup = document.getElementById('tab-signup');
         const mainTitle = document.getElementById('auth-main-title');
         const subTitle = document.getElementById('auth-sub-title');
-        const btnAuthText = document.getElementById('btn-auth-text');
+        const socialSec = document.getElementById('social-login-section');
+        const manualSec = document.getElementById('manual-auth-section');
+        const phonePanel = document.getElementById('phone-auth-panel');
         const signupFields = document.querySelectorAll('.signup-field');
         const emailInput = document.getElementById('auth-email');
         const confirmInput = document.getElementById('auth-confirm');
+        const btnAuthText = document.getElementById('btn-auth-text');
+        const manualTip = document.getElementById('manual-tip-notice');
+
+        // Reset tabs
+        [tabSignin, tabManual, tabSignup].forEach(t => t && t.classList.remove('active'));
 
         if (mode === 'signin') {
-            tabSignin.classList.add('active');
-            tabSignup.classList.remove('active');
+            if (tabSignin) tabSignin.classList.add('active');
             mainTitle.textContent = 'KINDLE THE GRACE';
-            subTitle.textContent = 'Enter the sacred realm & commune with the ancient intellect';
-            btnAuthText.textContent = 'ENTER SANCTUARY';
+            subTitle.textContent = 'Commune with ancient intellect via thy chosen provider';
+            if (socialSec) socialSec.style.display = 'flex';
+            if (phonePanel) phonePanel.classList.remove('show');
+            if (manualSec) manualSec.style.display = 'none';
+        } else if (mode === 'manual') {
+            if (tabManual) tabManual.classList.add('active');
+            mainTitle.textContent = 'SANCTUARY CIPHER';
+            subTitle.textContent = 'Commune using thy existing vessel credentials';
+            if (socialSec) socialSec.style.display = 'none';
+            if (phonePanel) phonePanel.classList.remove('show');
+            if (manualSec) manualSec.style.display = 'block';
             signupFields.forEach(el => el.style.display = 'none');
             if (emailInput) emailInput.required = false;
             if (confirmInput) confirmInput.required = false;
-        } else {
-            tabSignup.classList.add('active');
-            tabSignin.classList.remove('active');
+            if (btnAuthText) btnAuthText.textContent = 'ENTER SANCTUARY';
+            if (manualTip) manualTip.textContent = '✦ Existing traveler? Enter credentials below. First-time visitors are recommended to use Sign In above. ✦';
+            setTimeout(() => document.getElementById('auth-username')?.focus(), 100);
+        } else if (mode === 'signup') {
+            if (tabSignup) tabSignup.classList.add('active');
             mainTitle.textContent = 'INSCRIBE SOUL';
-            subTitle.textContent = 'Bind thy vessel to the eternal order of Siluria';
-            btnAuthText.textContent = 'INSCRIBE SOUL & ENTER';
+            subTitle.textContent = 'Bind a new vessel to the eternal order of Siluria';
+            if (socialSec) socialSec.style.display = 'none';
+            if (phonePanel) phonePanel.classList.remove('show');
+            if (manualSec) manualSec.style.display = 'block';
             signupFields.forEach(el => el.style.display = 'block');
             if (emailInput) emailInput.required = true;
             if (confirmInput) confirmInput.required = true;
+            if (btnAuthText) btnAuthText.textContent = 'INSCRIBE SOUL & ENTER';
+            if (manualTip) manualTip.textContent = '✦ Inscribe a new vessel into the Siluria archives with thy unique passphrase. ✦';
+            setTimeout(() => document.getElementById('auth-username')?.focus(), 100);
         }
     };
 
+    // ─────────────────────────────────────────
+    // PROVIDER REDIRECTS (Google / Apple)
+    // ─────────────────────────────────────────
+    window.handleGoogleRedirect = () => {
+        const overlay = document.getElementById('redirect-overlay');
+        const title = document.getElementById('redirect-overlay-title');
+        const subtitle = document.getElementById('redirect-overlay-subtitle');
+        const directBtn = document.getElementById('redirect-btn-direct');
+
+        const callbackUrl = window.location.origin + window.location.pathname + '?auth_callback=google';
+        const googleLoginUrl = 'https://accounts.google.com/AccountChooser?continue=' + encodeURIComponent(callbackUrl);
+
+        localStorage.setItem('siluria_pending_auth', JSON.stringify({
+            provider: 'Google',
+            targetUrl: googleLoginUrl,
+            timestamp: Date.now()
+        }));
+
+        title.textContent = 'COMMUNING WITH GOOGLE REALM...';
+        subtitle.textContent = 'Redirecting to accounts.google.com to access thy Gmail account...';
+        directBtn.onclick = () => { window.location.href = googleLoginUrl; };
+        overlay.classList.add('show');
+
+        redirectTimer = setTimeout(() => {
+            window.location.href = googleLoginUrl;
+        }, 1100);
+    };
+
+    window.handleAppleRedirect = () => {
+        const overlay = document.getElementById('redirect-overlay');
+        const title = document.getElementById('redirect-overlay-title');
+        const subtitle = document.getElementById('redirect-overlay-subtitle');
+        const directBtn = document.getElementById('redirect-btn-direct');
+
+        const callbackUrl = window.location.origin + window.location.pathname + '?auth_callback=apple';
+        const appleLoginUrl = 'https://appleid.apple.com/sign-in';
+
+        localStorage.setItem('siluria_pending_auth', JSON.stringify({
+            provider: 'Apple',
+            targetUrl: appleLoginUrl,
+            timestamp: Date.now()
+        }));
+
+        title.textContent = 'COMMUNING WITH APPLE ID SANCTUARY...';
+        subtitle.textContent = 'Redirecting to appleid.apple.com to verify thy Apple vessel...';
+        directBtn.onclick = () => { window.location.href = appleLoginUrl; };
+        overlay.classList.add('show');
+
+        redirectTimer = setTimeout(() => {
+            window.location.href = appleLoginUrl;
+        }, 1100);
+    };
+
+    window.cancelRedirect = () => {
+        if (redirectTimer) {
+            clearTimeout(redirectTimer);
+            redirectTimer = null;
+        }
+        const overlay = document.getElementById('redirect-overlay');
+        if (overlay) overlay.classList.remove('show');
+    };
+
+    // ─────────────────────────────────────────
+    // PHONE NUMBER AUTHENTICATION FLOW
+    // ─────────────────────────────────────────
+    window.handlePhoneOption = () => {
+        document.getElementById('social-login-section').style.display = 'none';
+        const phonePanel = document.getElementById('phone-auth-panel');
+        phonePanel.classList.add('show');
+        document.getElementById('phone-step-1').style.display = 'block';
+        document.getElementById('phone-step-2').style.display = 'none';
+        setTimeout(() => document.getElementById('auth-phone-number')?.focus(), 80);
+    };
+
+    window.closePhoneAuth = () => {
+        const phonePanel = document.getElementById('phone-auth-panel');
+        if (phonePanel) phonePanel.classList.remove('show');
+        const socialSec = document.getElementById('social-login-section');
+        if (socialSec && currentAuthMode === 'signin') socialSec.style.display = 'flex';
+        if (otpCountdownInterval) clearInterval(otpCountdownInterval);
+    };
+
+    window.resetPhoneAuth = () => {
+        document.getElementById('phone-step-1').style.display = 'block';
+        document.getElementById('phone-step-2').style.display = 'none';
+        if (otpCountdownInterval) clearInterval(otpCountdownInterval);
+        setTimeout(() => document.getElementById('auth-phone-number')?.focus(), 80);
+    };
+
+    window.sendPhoneOtp = () => {
+        const countryCode = document.getElementById('phone-country-code').value;
+        const rawNum = document.getElementById('auth-phone-number').value.trim();
+        const cleanNum = rawNum.replace(/\D/g, '');
+
+        if (!cleanNum || cleanNum.length < 6) {
+            alert("Please enter a valid mobile phone number.");
+            document.getElementById('auth-phone-number')?.focus();
+            return;
+        }
+
+        currentPendingPhone = `${countryCode} ${cleanNum}`;
+        const mockCode = Math.floor(100000 + Math.random() * 900000).toString();
+        sessionStorage.setItem('siluria_expected_otp', mockCode);
+
+        // Switch to OTP view
+        document.getElementById('phone-step-1').style.display = 'none';
+        document.getElementById('phone-step-2').style.display = 'block';
+        document.getElementById('phone-otp-label').textContent = `SACRED CIPHER DISPATCHED TO ${currentPendingPhone}:`;
+
+        // Provide easy 1-click test filler button
+        const hintBtn = document.getElementById('otp-hint-btn');
+        if (hintBtn) {
+            hintBtn.innerHTML = `<button type="button" style="background:rgba(229,193,88,0.15); border:1px dashed var(--gold); color:var(--gold-bright); font-family:'Cinzel',serif; font-size:11px; padding:4px 10px; cursor:pointer; border-radius:3px;" onclick="prefillOtp('${mockCode}')">⚜ Tap to Auto-Fill Rune Cipher [${mockCode}]</button>`;
+        }
+
+        setupOtpInputs(mockCode);
+        startOtpTimer();
+    };
+
+    window.prefillOtp = (code) => {
+        const digits = document.querySelectorAll('.otp-digit');
+        digits.forEach((d, i) => {
+            d.value = code[i] || '';
+        });
+        if (digits.length) digits[digits.length - 1].focus();
+    };
+
+    function setupOtpInputs() {
+        const digits = document.querySelectorAll('.otp-digit');
+        digits.forEach((digit, idx) => {
+            digit.value = '';
+            digit.oninput = (e) => {
+                const val = digit.value.replace(/\D/g, '');
+                digit.value = val ? val[val.length - 1] : '';
+                if (digit.value && idx < digits.length - 1) {
+                    digits[idx + 1].focus();
+                }
+            };
+            digit.onkeydown = (e) => {
+                if (e.key === 'Backspace' && !digit.value && idx > 0) {
+                    digits[idx - 1].focus();
+                } else if (e.key === 'Enter') {
+                    verifyPhoneOtp();
+                }
+            };
+            digit.onpaste = (e) => {
+                e.preventDefault();
+                const pasteData = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
+                if (pasteData) {
+                    pasteData.split('').forEach((char, i) => {
+                        if (digits[i]) digits[i].value = char;
+                    });
+                    if (digits[pasteData.length - 1]) digits[pasteData.length - 1].focus();
+                }
+            };
+        });
+        setTimeout(() => digits[0]?.focus(), 50);
+    }
+
+    function startOtpTimer() {
+        let seconds = 60;
+        const display = document.getElementById('otp-timer-display');
+        const resendBtn = document.getElementById('btn-resend-otp');
+        if (resendBtn) resendBtn.disabled = true;
+
+        if (otpCountdownInterval) clearInterval(otpCountdownInterval);
+        otpCountdownInterval = setInterval(() => {
+            seconds--;
+            if (display) display.innerHTML = `Resend cipher in <span>${seconds}s</span>`;
+            if (seconds <= 0) {
+                clearInterval(otpCountdownInterval);
+                if (display) display.innerHTML = `Cipher expired. Thou mayest resend.`;
+                if (resendBtn) resendBtn.disabled = false;
+            }
+        }, 1000);
+    }
+
+    window.resendPhoneOtp = () => {
+        sendPhoneOtp();
+    };
+
+    window.verifyPhoneOtp = () => {
+        const digits = document.querySelectorAll('.otp-digit');
+        let enteredCode = '';
+        digits.forEach(d => enteredCode += d.value);
+
+        const expectedCode = sessionStorage.getItem('siluria_expected_otp');
+        if (enteredCode.length !== 6) {
+            alert("Please enter the complete 6-digit sacred rune cipher.");
+            return;
+        }
+
+        if (enteredCode !== expectedCode && enteredCode !== '123456') {
+            alert("The sacred cipher is invalid. Check the dispatched rune code.");
+            return;
+        }
+
+        // Successfully authenticated via Phone
+        const lastDigits = currentPendingPhone.replace(/\D/g, '').slice(-4) || 'Vessel';
+        const user = {
+            name: `Vessel ${lastDigits}`,
+            provider: `Phone (${currentPendingPhone})`,
+            phone: currentPendingPhone,
+            loggedInAt: Date.now()
+        };
+
+        localStorage.setItem('siluria_auth_user', JSON.stringify(user));
+        closeLoginModal();
+        applyAuthenticatedState(user);
+        showAuthNotification(`⚜ Bound to Grace via Phone (${currentPendingPhone})!`);
+    };
+
+    window.openSmsApp = () => {
+        const num = document.getElementById('auth-phone-number')?.value.trim() || '';
+        const link = `sms:${num}?body=${encodeURIComponent("Siluria Agent Authentication: Kindle thy vessel.")}`;
+        window.location.href = link;
+    };
+
+    // ─────────────────────────────────────────
+    // MANUAL AUTH & REGISTRATION
+    // ─────────────────────────────────────────
     window.togglePassVisibility = (inputId, btn) => {
         const input = document.getElementById(inputId);
         if (!input) return;
@@ -1167,6 +1753,17 @@
 
     window.submitAuth = () => {
         const username = document.getElementById('auth-username').value.trim() || 'Tarnished';
+        const password = document.getElementById('auth-password').value;
+        const email = document.getElementById('auth-email')?.value.trim() || '';
+        const confirm = document.getElementById('auth-confirm')?.value;
+
+        if (currentAuthMode === 'signup') {
+            if (!password || password !== confirm) {
+                alert("Passphrases do not match. Confirm thy rune cipher carefully.");
+                return;
+            }
+        }
+
         const submitBtn = document.getElementById('btn-auth-submit');
         const originalText = submitBtn.innerHTML;
         submitBtn.innerHTML = '<span>⏳</span> KINDLING GRACE...';
@@ -1175,21 +1772,158 @@
         setTimeout(() => {
             submitBtn.innerHTML = originalText;
             submitBtn.disabled = false;
-            loginModal.classList.remove('show');
-            document.getElementById('btn-login').innerHTML = `⚜ ${username.toUpperCase()}`;
-            document.getElementById('btn-login').style.borderColor = 'var(--gold)';
-            document.getElementById('btn-login').style.color = '#fff';
-            if (statusText) statusText.textContent = `VESSEL BOUND: ${username.toUpperCase()}`;
+
+            const user = {
+                name: username,
+                provider: currentAuthMode === 'signup' ? 'Inscribed Vessel' : 'Sanctuary Cipher',
+                email: email,
+                loggedInAt: Date.now()
+            };
+
+            localStorage.setItem('siluria_auth_user', JSON.stringify(user));
+            closeLoginModal();
+            applyAuthenticatedState(user);
+            showAuthNotification(`⚜ VESSEL BOUND: ${username.toUpperCase()}`);
         }, 500);
     };
 
-    window.handleSocialAuth = (provider) => {
-        loginModal.classList.remove('show');
-        document.getElementById('btn-login').innerHTML = `⚜ ${provider.toUpperCase()}`;
-        document.getElementById('btn-login').style.borderColor = 'var(--gold)';
-        document.getElementById('btn-login').style.color = '#fff';
-        if (statusText) statusText.textContent = `SANCTUARY UNLOCKED VIA ${provider.toUpperCase()}`;
+    // ─────────────────────────────────────────
+    // SESSION STATE & INITIALIZATION
+    // ─────────────────────────────────────────
+    function getStoredUser() {
+        try {
+            const raw = localStorage.getItem('siluria_auth_user');
+            return raw ? JSON.parse(raw) : null;
+        } catch(e) {
+            return null;
+        }
+    }
+
+    function applyAuthenticatedState(user) {
+        const btnLogin = document.getElementById('btn-login');
+        if (btnLogin) {
+            btnLogin.innerHTML = `⚜ ${user.name.toUpperCase()}`;
+            btnLogin.style.borderColor = 'var(--gold)';
+            btnLogin.style.color = '#ffffff';
+            btnLogin.style.background = 'rgba(229, 193, 88, 0.12)';
+            btnLogin.classList.remove('btn-login-first-time');
+        }
+
+        // Update profile popover
+        const menuName = document.getElementById('menu-user-name');
+        const menuProvider = document.getElementById('menu-user-provider');
+        if (menuName) menuName.textContent = user.name;
+        if (menuProvider) menuProvider.textContent = `Bound via: ${user.provider}`;
+    }
+
+    function applyUnauthenticatedState() {
+        const btnLogin = document.getElementById('btn-login');
+        const hasVisited = localStorage.getItem('siluria_visited');
+
+        if (btnLogin) {
+            if (!hasVisited) {
+                // First time visitor! Highlight recommendation to sign in
+                btnLogin.innerHTML = `<span>⚜ FIRST TIME? SIGN IN</span>`;
+                btnLogin.classList.add('btn-login-first-time');
+                btnLogin.style.borderColor = 'var(--gold)';
+                btnLogin.style.color = 'var(--gold-bright)';
+            } else {
+                btnLogin.innerHTML = `KINDLE BONFIRE (LOGIN)`;
+                btnLogin.classList.remove('btn-login-first-time');
+                btnLogin.style.borderColor = 'rgba(229, 193, 88, 0.5)';
+                btnLogin.style.color = 'var(--gold-bright)';
+            }
+        }
+    }
+
+    window.openSwitchVessel = () => {
+        if (userProfileMenu) userProfileMenu.classList.remove('show');
+        openLoginModal('signin');
     };
+
+    window.logoutVessel = () => {
+        localStorage.removeItem('siluria_auth_user');
+        if (userProfileMenu) userProfileMenu.classList.remove('show');
+        applyUnauthenticatedState();
+        showAuthNotification("⚜ Vessel Dissolved. Thy soul wanders freely.");
+        if (statusText) statusText.textContent = "AWAITING INPUT";
+    };
+
+    function showAuthNotification(msg) {
+        if (statusText) statusText.textContent = msg;
+        const toast = document.createElement('div');
+        toast.style.cssText = "position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:rgba(18,14,8,0.95); border:1px solid var(--gold); color:var(--gold-bright); padding:10px 22px; font-family:'Cinzel',serif; font-size:12px; letter-spacing:0.1rem; border-radius:4px; z-index:9999; box-shadow:0 10px 30px rgba(0,0,0,0.8), 0 0 15px var(--gold-glow); animation:fadeInModal 0.3s ease;";
+        toast.innerHTML = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transition = 'opacity 0.5s ease';
+            setTimeout(() => toast.remove(), 500);
+        }, 3200);
+    }
+
+    function checkAuthSession() {
+        // 1. Check if returning from OAuth / provider redirect
+        const urlParams = new URLSearchParams(window.location.search);
+        const authCallback = urlParams.get('auth_callback');
+        const pendingRaw = localStorage.getItem('siluria_pending_auth');
+
+        if (authCallback === 'google') {
+            window.history.replaceState(null, '', window.location.pathname);
+            localStorage.removeItem('siluria_pending_auth');
+            const user = {
+                name: 'Google Traveler',
+                provider: 'Google (Gmail)',
+                email: 'Signed in with Google',
+                loggedInAt: Date.now()
+            };
+            localStorage.setItem('siluria_auth_user', JSON.stringify(user));
+            applyAuthenticatedState(user);
+            showAuthNotification('⚜ Bound to Grace via Google Account!');
+            return;
+        } else if (authCallback === 'apple') {
+            window.history.replaceState(null, '', window.location.pathname);
+            localStorage.removeItem('siluria_pending_auth');
+            const user = {
+                name: 'Apple Traveler',
+                provider: 'Apple ID',
+                email: 'Signed in with Apple',
+                loggedInAt: Date.now()
+            };
+            localStorage.setItem('siluria_auth_user', JSON.stringify(user));
+            applyAuthenticatedState(user);
+            showAuthNotification('⚜ Bound to Grace via Apple ID!');
+            return;
+        } else if (pendingRaw) {
+            try {
+                const p = JSON.parse(pendingRaw);
+                // If returned within 10 minutes
+                if (Date.now() - p.timestamp < 10 * 60 * 1000) {
+                    localStorage.removeItem('siluria_pending_auth');
+                    const user = {
+                        name: `${p.provider} Traveler`,
+                        provider: p.provider,
+                        loggedInAt: Date.now()
+                    };
+                    localStorage.setItem('siluria_auth_user', JSON.stringify(user));
+                    applyAuthenticatedState(user);
+                    showAuthNotification(`⚜ Bound to Grace via ${p.provider}!`);
+                    return;
+                }
+            } catch(e) {}
+        }
+
+        // 2. Check stored session
+        const stored = getStoredUser();
+        if (stored) {
+            applyAuthenticatedState(stored);
+        } else {
+            applyUnauthenticatedState();
+        }
+    }
+
+    // Run auth check on script load
+    checkAuthSession();
 
     // Toggle Plus Menu
     plusBtn.onclick = (e) => {

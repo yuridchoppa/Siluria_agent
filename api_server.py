@@ -34,6 +34,30 @@ app = FastAPI(title="Siluria Agent - AnakinForge")
 handler = app
 application = app
 
+@app.middleware("http")
+async def vercel_path_normalizer(request: Request, call_next):
+    """
+    Normalizes paths when running under Vercel Serverless rewrites.
+    Restores the true requested path from Vercel's x-matched-path header
+    or strips the /api/index.py prefix.
+    """
+    matched = request.headers.get("x-matched-path") or request.headers.get("x-vercel-matched-path")
+    if matched:
+        if "?" in matched:
+            path_part, query_part = matched.split("?", 1)
+            request.scope["path"] = path_part
+            request.scope["query_string"] = query_part.encode("utf-8")
+        else:
+            request.scope["path"] = matched
+    elif request.scope.get("path") in ("/api/index.py", "/api/index", "/api", "/api/"):
+        request.scope["path"] = "/"
+    elif request.scope.get("path", "").startswith("/api/index.py/"):
+        request.scope["path"] = request.scope["path"][len("/api/index.py"):]
+    elif request.scope.get("path", "").startswith("/api/index/"):
+        request.scope["path"] = request.scope["path"][len("/api/index"):]
+
+    return await call_next(request)
+
 agent = SiluriaAgent()
 
 UI_DIR = os.path.join(BASE_DIR, "ui")
@@ -61,6 +85,7 @@ if os.path.isdir(UI_DIR):
 
 
 @app.get("/health")
+@app.get("/api/health")
 async def health_check():
     has_key = bool(os.getenv("LLM_API_KEY") or LLM_API_KEY or os.getenv("GEMINI_API_KEY") or GEMINI_API_KEY or os.getenv("ANAKIN_API_KEY") or ANAKIN_API_KEY)
     return {
@@ -80,6 +105,7 @@ class ScrapeRequest(BaseModel):
 
 
 @app.post("/v1/scrape")
+@app.post("/api/v1/scrape")
 async def anakin_scrape_endpoint(req: ScrapeRequest):
     """
     AnakinScraper-compatible endpoint (POST /v1/scrape).
@@ -106,6 +132,10 @@ class ChatRequest(BaseModel):
 
 
 @app.get("/")
+@app.get("/api")
+@app.get("/api/")
+@app.get("/api/index")
+@app.get("/api/index.py")
 async def read_index():
     candidates = [
         os.path.join(UI_DIR, "index.html"),
@@ -123,6 +153,7 @@ async def read_index():
 
 
 @app.get("/logo")
+@app.get("/api/logo")
 async def get_logo():
     search_dirs = [BASE_DIR, UI_DIR, "."]
     extensions = (".png", ".jpg", ".jpeg", ".webp", ".svg", ".gif")
@@ -141,16 +172,19 @@ async def get_logo():
 
 
 @app.get("/api/sessions")
+@app.get("/sessions")
 async def sessions():
     return {"sessions": db.list_sessions()}
 
 
 @app.post("/api/sessions")
+@app.post("/sessions")
 async def new_session():
     return db.create_session()
 
 
 @app.get("/api/sessions/{session_id}")
+@app.get("/sessions/{session_id}")
 async def session_detail(session_id: str):
     sess = db.get_session(session_id)
     if not sess:
@@ -159,12 +193,14 @@ async def session_detail(session_id: str):
 
 
 @app.delete("/api/sessions/{session_id}")
+@app.delete("/sessions/{session_id}")
 async def drop_session(session_id: str):
     db.delete_session(session_id)
     return {"ok": True}
 
 
 @app.post("/api/upload")
+@app.post("/upload")
 async def upload(session_id: str = Form(""), files: List[UploadFile] = File(...)):
     saved = []
     for uf in files:
@@ -179,6 +215,7 @@ async def upload(session_id: str = Form(""), files: List[UploadFile] = File(...)
 
 
 @app.post("/api/chat/stream")
+@app.post("/chat/stream")
 async def chat_stream(request: ChatRequest):
     session_id = request.session_id
     if not session_id or not db.get_session(session_id):

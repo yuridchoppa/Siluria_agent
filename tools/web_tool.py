@@ -27,22 +27,86 @@ except (ImportError, Exception):
 
 def search_web(query: str, max_results: int = 5) -> List[Dict[str, str]]:
     """
-    Search the web using DuckDuckGo and return a list of dictionaries
-    containing 'title', 'href', and 'body' (snippet).
+    Search the web using DuckDuckGo HTML POST API with fallbacks to DDGS and Instant Answers.
+    Returns a list of dictionaries containing 'title', 'url', and 'snippet'.
     """
-    if not DDGS:
-        return [{"title": "Search Unavailable", "url": "", "snippet": "Search dependency not installed."}]
     results = []
+
+    # Strategy 1: Direct DuckDuckGo HTML POST (bypasses bot challenges on cloud/serverless IPs)
     try:
-        with DDGS() as ddgs:
-            for r in ddgs.text(query, max_results=max_results):
-                results.append({
-                    "title": r.get("title", ""),
-                    "url": r.get("href", ""),
-                    "snippet": r.get("body", "")
-                })
+        headers = {
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+            ),
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Referer": "https://html.duckduckgo.com/",
+        }
+        resp = requests.post("https://html.duckduckgo.com/html/", data={"q": query}, headers=headers, timeout=8)
+        if resp.ok and bs4:
+            import urllib.parse
+            soup = bs4.BeautifulSoup(resp.text, "html.parser")
+            for el in soup.select(".result"):
+                a = el.select_one(".result__a")
+                snippet_el = el.select_one(".result__snippet")
+                if a:
+                    raw_url = a.get("href", "")
+                    if "uddg=" in raw_url:
+                        actual_url = urllib.parse.unquote(raw_url.split("uddg=")[1].split("&")[0])
+                    else:
+                        actual_url = raw_url
+                    results.append({
+                        "title": a.get_text(strip=True),
+                        "url": actual_url,
+                        "snippet": snippet_el.get_text(strip=True) if snippet_el else ""
+                    })
+                    if len(results) >= max_results:
+                        break
     except Exception as e:
-        print(f"Error searching web: {e}")
+        print(f"DDG HTML search error: {e}")
+
+    # Strategy 2: DDGS fallback if Strategy 1 produced 0 results
+    if not results and DDGS:
+        try:
+            with DDGS() as ddgs:
+                for r in ddgs.text(query, max_results=max_results):
+                    results.append({
+                        "title": r.get("title", ""),
+                        "url": r.get("href", ""),
+                        "snippet": r.get("body", "")
+                    })
+        except Exception as e:
+            print(f"DDGS error: {e}")
+
+    # Strategy 3: DuckDuckGo Instant Answer API fallback
+    if not results:
+        try:
+            ia_resp = requests.get(
+                "https://api.duckduckgo.com/",
+                params={"q": query, "format": "json", "no_html": "1"},
+                headers={"User-Agent": "Mozilla/5.0"},
+                timeout=5
+            )
+            if ia_resp.ok:
+                data = ia_resp.json()
+                abstract = data.get("AbstractText")
+                source_url = data.get("AbstractURL")
+                heading = data.get("Heading")
+                if abstract:
+                    results.append({
+                        "title": heading or query,
+                        "url": source_url or "",
+                        "snippet": abstract
+                    })
+        except Exception:
+            pass
+
+    if not results:
+        return [{
+            "title": "No Direct Results",
+            "url": "",
+            "snippet": f"Web search executed for '{query}', but no direct results were returned. Please synthesize the best answer based on available knowledge."
+        }]
 
     return results
 

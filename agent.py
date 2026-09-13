@@ -138,7 +138,7 @@ SYSTEM_INSTRUCTION = (
     "When researching or answering questions about websites or current events, use AnakinScraper and web search proactively."
 )
 
-MAX_TOOL_ROUNDS = 10
+MAX_TOOL_ROUNDS = 3
 
 
 class SiluriaAgent:
@@ -265,7 +265,7 @@ class SiluriaAgent:
                 # Persist full response
                 full_response = "".join(chunks_sent)
                 import re
-                clean = re.sub(r'\n\n\*(?:⚙|\[Tool:) .*?\]\*\n\n|\n\n\*⚙ \[.*?\]\*\n\n', '', full_response)
+                clean = re.sub(r'\n\n\*(?:⚙|\[Tool:|⚜ Communing with) .*?\*\n\n|\n\n\*⚙ \[.*?\]\*\n\n', '', full_response)
                 self.model_name = model
                 db.add_message(session_id, "assistant", clean.strip())
                 return
@@ -288,13 +288,14 @@ class SiluriaAgent:
         Agentic loop for one model: tool-call rounds followed by a streamed final answer.
         """
         for _round in range(MAX_TOOL_ROUNDS):
+            # On the final tool round, force synthesis without requesting further tools
+            is_final_round = (_round == MAX_TOOL_ROUNDS - 1)
             try:
-                # Check if model wants to call a tool
                 response = self.client.chat.completions.create(
                     model=model,
                     messages=messages,
-                    tools=TOOLS_SCHEMA,
-                    tool_choice="auto",
+                    tools=TOOLS_SCHEMA if not is_final_round else None,
+                    tool_choice="none" if is_final_round else "auto",
                     stream=False
                 )
             except Exception as e:
@@ -317,11 +318,10 @@ class SiluriaAgent:
             msg = choice.message
 
             if not msg.tool_calls:
-                # The model already produced the full answer in msg.content!
+                # The model produced the final answer
                 if msg.content:
                     yield msg.content
                 else:
-                    # Fallback stream if content was empty
                     stream = self.client.chat.completions.create(
                         model=model,
                         messages=messages,
@@ -335,7 +335,7 @@ class SiluriaAgent:
 
             # Tool calls encountered
             tool_names = ", ".join([tc.function.name for tc in msg.tool_calls])
-            yield f"\n\n*[Tool: {tool_names}]*\n\n"
+            yield f"\n\n*⚜ Communing with {tool_names}...*\n\n"
 
             # Build clean assistant message preserving tool calls
             asst_dict: Dict[str, Any] = {
@@ -375,3 +375,18 @@ class SiluriaAgent:
                     "name": fn_name,
                     "content": result_str
                 })
+
+        # If tool rounds completed without generating final text, synthesize the final answer
+        try:
+            stream = self.client.chat.completions.create(
+                model=model,
+                messages=messages,
+                stream=True
+            )
+            for chunk in stream:
+                delta = chunk.choices[0].delta if chunk.choices else None
+                if delta and delta.content:
+                    yield delta.content
+        except Exception as synth_err:
+            print(f"Final synthesis error on {model}: {synth_err}")
+            raise synth_err

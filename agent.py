@@ -210,6 +210,9 @@ class SiluriaAgent:
         Drive the Anakin.io agentic loop with model fallback.
         Yields text chunks to stream to the client.
         """
+        # Immediate invisible chunk to establish HTTP 200 and satisfy serverless connection timeouts
+        yield "\u200b"
+
         history = db.get_chat_history(session_id)
 
         # Build conversation messages from history

@@ -9,11 +9,11 @@ import shutil
 import uuid
 import traceback
 from typing import List, Optional
-from urllib.parse import unquote
+from urllib.parse import unquote, urlparse
 
 from fastapi import FastAPI, File, Form, UploadFile, Request
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, Response, StreamingResponse, HTMLResponse
+from fastapi.responses import FileResponse, Response, StreamingResponse, HTMLResponse, JSONResponse
 from pydantic import BaseModel
 
 from config import (
@@ -39,8 +39,8 @@ application = app
 async def vercel_path_normalizer(request: Request, call_next):
     """
     Normalizes paths when running under Vercel Serverless rewrites or native deployments.
-    Restores the true requested path from the __route__ query parameter,
-    strips /api/index.py prefixes, and ensures requests route to the intended endpoints.
+    Extracts the true incoming route from query parameters and reverse proxy headers,
+    strips serverless function prefixes, and ensures POST requests reach their targets.
     """
     path = request.scope.get("path", "")
     method = request.scope.get("method", "GET")
@@ -63,7 +63,19 @@ async def vercel_path_normalizer(request: Request, call_next):
             request.scope["query_string"] = "&".join(new_params).encode("utf-8")
             path = target_route
 
-    # 2. Strip serverless function file prefixes from path
+    # 2. Check forwarded headers (x-forwarded-url, x-original-url)
+    forwarded = request.headers.get("x-forwarded-url") or request.headers.get("x-original-url")
+    if forwarded and ("http://" in forwarded or "https://" in forwarded or forwarded.startswith("/")):
+        try:
+            parsed = urlparse(forwarded)
+            req_p = parsed.path
+            if req_p and req_p not in ("/", "/api/index.py", "/api/index"):
+                path = req_p
+                request.scope["path"] = path
+        except Exception:
+            pass
+
+    # 3. Strip serverless function file prefixes from path
     for prefix in ("/api/index.py", "/api/index"):
         if path.startswith(prefix + "/"):
             path = path[len(prefix):]
@@ -71,7 +83,6 @@ async def vercel_path_normalizer(request: Request, call_next):
             break
         elif path == prefix:
             if method == "POST":
-                # A POST request directly hitting the serverless handler is a chat query
                 path = "/api/chat/stream"
                 request.scope["path"] = path
             else:
@@ -79,10 +90,13 @@ async def vercel_path_normalizer(request: Request, call_next):
                 request.scope["path"] = path
             break
 
-    # 3. If a POST request arrives at "/" or "/api" or "/api/" with JSON body:
+    # 4. If a POST request arrives at "/" or "/api" or "/api/":
     if method == "POST" and path in ("/", "/api", "/api/"):
         content_type = request.headers.get("content-type", "")
-        if "application/json" in content_type:
+        if "multipart/form-data" in content_type:
+            path = "/api/upload"
+            request.scope["path"] = path
+        else:
             path = "/api/chat/stream"
             request.scope["path"] = path
 
@@ -172,14 +186,19 @@ async def read_index():
         os.path.join(BASE_DIR, "ui", "index.html"),
         "ui/index.html",
     ]
+    cache_headers = {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0",
+    }
     for path in candidates:
         if os.path.isfile(path):
             try:
                 with open(path, "r", encoding="utf-8") as f:
-                    return HTMLResponse(content=f.read(), status_code=200)
+                    return HTMLResponse(content=f.read(), status_code=200, headers=cache_headers)
             except Exception:
                 pass
-    return HTMLResponse(content="<h1>Siluria Agent</h1><p>UI loading...</p>", status_code=200)
+    return HTMLResponse(content="<h1>Siluria Agent</h1><p>UI loading...</p>", status_code=200, headers=cache_headers)
 
 
 @app.get("/logo")
@@ -296,6 +315,23 @@ async def chat_stream(request: ChatRequest):
             "Connection": "keep-alive",
         }
     )
+
+
+@app.exception_handler(405)
+async def method_not_allowed_handler(request: Request, exc):
+    """
+    Auto-recovers from 405 Method Not Allowed on Vercel or misrouted clients.
+    If a POST request arrives with a chat payload, dynamically delegates to chat_stream.
+    """
+    if request.method == "POST":
+        try:
+            body = await request.json()
+            if isinstance(body, dict) and "query" in body:
+                chat_req = ChatRequest(**body)
+                return await chat_stream(chat_req)
+        except Exception as e:
+            print(f"405 recovery exception: {e}")
+    return JSONResponse(status_code=405, content={"detail": "Method Not Allowed"})
 
 
 if __name__ == "__main__":

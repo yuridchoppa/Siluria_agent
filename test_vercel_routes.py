@@ -65,6 +65,11 @@ def test_all():
     assert "4" in code_out, f"Python execution failed: {code_out}"
     print("execute_python tool OK:", code_out.strip())
 
+    print("\n--- 11. Testing 405 Auto-Recovery Handler on GET-only endpoint (/health) ---")
+    r = client.post("/health", json={"query": "Test 405 recovery", "session_id": "recovery_session"})
+    assert r.status_code == 200, f"405 recovery failed: {r.status_code} {r.text}"
+    print("405 Auto-Recovery Handler OK: intercepted 405 and streamed response with status 200!")
+
     print("\n==========================================")
     print("ALL TESTS PASSED! VERCEL 405 ISSUE FIXED!")
     print("==========================================")

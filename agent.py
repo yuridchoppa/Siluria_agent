@@ -148,19 +148,38 @@ class SiluriaAgent:
 
     @property
     def client(self) -> OpenAI:
-        if self._client is None:
-            key = os.getenv("LLM_API_KEY") or LLM_API_KEY
-            base_url = os.getenv("LLM_BASE_URL") or LLM_BASE_URL
-            if not key:
-                raise ValueError(
-                    "No LLM API Key configured. Please set GEMINI_API_KEY or ANAKIN_API_KEY in your .env or Vercel Environment Variables."
-                )
+        key = (
+            os.getenv("LLM_API_KEY")
+            or os.getenv("GEMINI_API_KEY")
+            or os.getenv("ANAKIN_API_KEY")
+            or os.getenv("OPENAI_API_KEY")
+            or LLM_API_KEY
+            or GEMINI_API_KEY
+            or ANAKIN_API_KEY
+        )
+        base_url = (
+            os.getenv("LLM_BASE_URL")
+            or LLM_BASE_URL
+        )
+        if not key:
+            raise ValueError(
+                "No LLM API Key configured. Please set GEMINI_API_KEY or ANAKIN_API_KEY in your .env or Vercel Environment Variables."
+            )
+        if self._client is None or getattr(self, "_cached_key", None) != key:
+            self._cached_key = key
             self._client = OpenAI(api_key=key, base_url=base_url if base_url else None)
         return self._client
 
     def _models(self) -> List[str]:
+        default = (os.getenv("DEFAULT_MODEL") or self.model_name or DEFAULT_MODEL).strip()
+        fallbacks_str = os.getenv("MODEL_FALLBACKS")
+        if fallbacks_str:
+            fallbacks = [m.strip() for m in fallbacks_str.split(",") if m.strip()]
+        else:
+            fallbacks = MODEL_FALLBACKS
+
         seen, ordered = set(), []
-        for m in [self.model_name] + MODEL_FALLBACKS:
+        for m in [default] + fallbacks:
             if m and m not in seen:
                 seen.add(m)
                 ordered.append(m)
@@ -251,13 +270,11 @@ class SiluriaAgent:
             except Exception as e:
                 err = str(e)
                 last_error = e
-                if any(k in err for k in ("429", "insufficient_quota", "503", "404", "model_not_found")):
-                    continue  # try next model fallback
-                yield f"\n[Error: {err}]"
-                return
+                print(f"Model {model} failed: {err}")
+                continue  # try next model fallback
 
         if last_error:
-            yield f"\n[All models exhausted. Last error: {last_error}]"
+            yield f"\n\n⚠️ **Communication Error:** All available models failed to respond.\n*Last error:* `{last_error}`\n\nPlease verify your API key (`GEMINI_API_KEY` or `ANAKIN_API_KEY`) in your Vercel Environment Variables."
 
     def _agentic_stream(
         self,
@@ -268,46 +285,65 @@ class SiluriaAgent:
         Agentic loop for one model: tool-call rounds followed by a streamed final answer.
         """
         for _round in range(MAX_TOOL_ROUNDS):
-            # Check if model wants to call a tool
-            response = self.client.chat.completions.create(
-                model=model,
-                messages=messages,
-                tools=TOOLS_SCHEMA,
-                tool_choice="auto",
-                stream=False
-            )
+            try:
+                # Check if model wants to call a tool
+                response = self.client.chat.completions.create(
+                    model=model,
+                    messages=messages,
+                    tools=TOOLS_SCHEMA,
+                    tool_choice="auto",
+                    stream=False
+                )
+            except Exception as e:
+                # If function calling is not supported by the model/endpoint, fall back to plain completion
+                err_str = str(e).lower()
+                if any(k in err_str for k in ("tools", "function", "unrecognized", "schema", "argument")):
+                    stream = self.client.chat.completions.create(
+                        model=model,
+                        messages=messages,
+                        stream=True
+                    )
+                    for chunk in stream:
+                        delta = chunk.choices[0].delta if chunk.choices else None
+                        if delta and delta.content:
+                            yield delta.content
+                    return
+                raise e
 
             choice = response.choices[0]
             msg = choice.message
 
             if not msg.tool_calls:
-                # No more tools requested. Stream final answer.
-                stream = self.client.chat.completions.create(
-                    model=model,
-                    messages=messages,
-                    stream=True
-                )
-                got_any = False
-                for chunk in stream:
-                    delta = chunk.choices[0].delta if chunk.choices else None
-                    if delta and delta.content:
-                        got_any = True
-                        yield delta.content
-
-                if not got_any and msg.content:
+                # The model already produced the full answer in msg.content!
+                if msg.content:
                     yield msg.content
+                else:
+                    # Fallback stream if content was empty
+                    stream = self.client.chat.completions.create(
+                        model=model,
+                        messages=messages,
+                        stream=True
+                    )
+                    for chunk in stream:
+                        delta = chunk.choices[0].delta if chunk.choices else None
+                        if delta and delta.content:
+                            yield delta.content
                 return
 
             # Tool calls encountered
             tool_names = ", ".join([tc.function.name for tc in msg.tool_calls])
             yield f"\n\n*[Tool: {tool_names}]*\n\n"
 
-            # Build clean assistant message preserving tool calls and Google thought_signatures
-            asst_dict = {
+            # Build clean assistant message preserving tool calls
+            asst_dict: Dict[str, Any] = {
                 "role": "assistant",
-                "content": msg.content or "",
                 "tool_calls": []
             }
+            if msg.content:
+                asst_dict["content"] = msg.content
+            else:
+                asst_dict["content"] = None
+
             for tc in msg.tool_calls:
                 tc_dict = {
                     "id": tc.id,

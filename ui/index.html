@@ -2026,7 +2026,9 @@
     async function fetchSessions() {
         try {
             const res = await fetch('/api/sessions');
+            if (!res.ok) return;
             const data = await res.json();
+            if (!data || !Array.isArray(data.sessions)) return;
             sessionsList.innerHTML = "";
             data.sessions.forEach(s => {
                 const div = document.createElement('div');
@@ -2130,11 +2132,65 @@
         renderAttachments();
 
         try {
-            const res = await fetch('/api/chat/stream', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
+            const candidateEndpoints = [
+                '/api/chat/stream',
+                '/chat/stream',
+                '/api/index.py',
+                '/api/index',
+                '/api/index.py?__route__=/api/chat/stream'
+            ];
+
+            let res = null;
+            let lastErr = null;
+
+            for (const endpoint of candidateEndpoints) {
+                try {
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    // If endpoint is 404 or 405, attempt next fallback endpoint
+                    if ((response.status === 404 || response.status === 405) && endpoint !== candidateEndpoints[candidateEndpoints.length - 1]) {
+                        console.warn(`Endpoint ${endpoint} returned ${response.status}. Trying next candidate...`);
+                        continue;
+                    }
+                    res = response;
+                    break;
+                } catch (fetchErr) {
+                    lastErr = fetchErr;
+                }
+            }
+
+            if (!res) {
+                throw lastErr || new Error("Failed to reach any server endpoint.");
+            }
+
+            if (!res.ok) {
+                let errDetail = `Server responded with status ${res.status} (${res.statusText})`;
+                try {
+                    const errJson = await res.json();
+                    if (errJson && errJson.detail) {
+                        errDetail = typeof errJson.detail === 'string' ? errJson.detail : JSON.stringify(errJson.detail);
+                    }
+                } catch (_) {
+                    try {
+                        const errTxt = await res.text();
+                        if (errTxt) errDetail = errTxt;
+                    } catch (_) {}
+                }
+                streamTarget.innerHTML = `
+                    <div style="background: rgba(239, 68, 68, 0.12); border-left: 4px solid var(--red-bright, #ef4444); padding: 12px 16px; border-radius: 4px; color: #fca5a5; font-size: 0.92rem; line-height: 1.5;">
+                        <strong style="color: #fff; display: block; margin-bottom: 4px;">⚠️ Transmission Error (${res.status})</strong>
+                        ${errDetail}
+                    </div>
+                `;
+                statusText.textContent = "ERROR";
+                queryEl.disabled = false;
+                sendBtn.disabled = false;
+                queryEl.focus();
+                return;
+            }
 
             const reader = res.body.getReader();
             const decoder = new TextDecoder();
@@ -2143,11 +2199,15 @@
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
-                const chunk = decoder.decode(value);
+                const chunk = decoder.decode(value, { stream: true });
                 fullText += chunk;
                 streamTarget.innerHTML = marked.parse(fullText);
                 chatbox.scrollTop = chatbox.scrollHeight;
                 progressFill.style.width = "85%";
+            }
+
+            if (!fullText.trim()) {
+                streamTarget.innerHTML = `<em>*The oracle rendered silence. Please verify API keys or query parameters.*</em>`;
             }
 
             streamTarget.removeAttribute('id');
@@ -2155,7 +2215,12 @@
             statusText.textContent = "IDLE";
             fetchSessions();
         } catch (e) {
-            streamTarget.innerHTML = `<span style="color:var(--red-bright);">Connection Severed: ${e}</span>`;
+            streamTarget.innerHTML = `
+                <div style="background: rgba(239, 68, 68, 0.12); border-left: 4px solid var(--red-bright, #ef4444); padding: 12px 16px; border-radius: 4px; color: #fca5a5; font-size: 0.92rem;">
+                    <strong style="color: #fff; display: block; margin-bottom: 4px;">⚔ Connection Severed</strong>
+                    ${e.message || e}
+                </div>
+            `;
             statusText.textContent = "ERROR";
         }
 
@@ -2171,13 +2236,18 @@
 
     // Initialize Sessions on Boot
     fetchSessions().then(async () => {
-        const res = await fetch('/api/sessions');
-        const data = await res.json();
-        if (data.sessions.length > 0) {
-            loadSession(data.sessions[0].id);
-        } else {
-            document.getElementById('btn-new-chat').click();
-        }
+        try {
+            const res = await fetch('/api/sessions');
+            if (res.ok) {
+                const data = await res.json();
+                if (data && Array.isArray(data.sessions) && data.sessions.length > 0) {
+                    loadSession(data.sessions[0].id);
+                    return;
+                }
+            }
+        } catch (_) {}
+        const newBtn = document.getElementById('btn-new-chat');
+        if (newBtn) newBtn.click();
     });
     </script>
 </body>

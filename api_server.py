@@ -9,6 +9,7 @@ import shutil
 import uuid
 import traceback
 from typing import List, Optional
+from urllib.parse import unquote
 
 from fastapi import FastAPI, File, Form, UploadFile, Request
 from fastapi.staticfiles import StaticFiles
@@ -37,24 +38,53 @@ application = app
 @app.middleware("http")
 async def vercel_path_normalizer(request: Request, call_next):
     """
-    Normalizes paths when running under Vercel Serverless rewrites.
-    Restores the true requested path from Vercel's x-matched-path header
-    or strips the /api/index.py prefix.
+    Normalizes paths when running under Vercel Serverless rewrites or native deployments.
+    Restores the true requested path from the __route__ query parameter,
+    strips /api/index.py prefixes, and ensures requests route to the intended endpoints.
     """
-    matched = request.headers.get("x-matched-path") or request.headers.get("x-vercel-matched-path")
-    if matched:
-        if "?" in matched:
-            path_part, query_part = matched.split("?", 1)
-            request.scope["path"] = path_part
-            request.scope["query_string"] = query_part.encode("utf-8")
-        else:
-            request.scope["path"] = matched
-    elif request.scope.get("path") in ("/api/index.py", "/api/index", "/api", "/api/"):
-        request.scope["path"] = "/"
-    elif request.scope.get("path", "").startswith("/api/index.py/"):
-        request.scope["path"] = request.scope["path"][len("/api/index.py"):]
-    elif request.scope.get("path", "").startswith("/api/index/"):
-        request.scope["path"] = request.scope["path"][len("/api/index"):]
+    path = request.scope.get("path", "")
+    method = request.scope.get("method", "GET")
+
+    # 1. Check if true path was passed via __route__ rewrite parameter
+    raw_query = request.scope.get("query_string", b"").decode("utf-8", errors="ignore")
+    if "__route__=" in raw_query:
+        params = raw_query.split("&")
+        new_params = []
+        target_route = None
+        for p in params:
+            if p.startswith("__route__="):
+                target_route = unquote(p[len("__route__="):])
+            else:
+                new_params.append(p)
+        if target_route:
+            if not target_route.startswith("/"):
+                target_route = "/" + target_route
+            request.scope["path"] = target_route
+            request.scope["query_string"] = "&".join(new_params).encode("utf-8")
+            path = target_route
+
+    # 2. Strip serverless function file prefixes from path
+    for prefix in ("/api/index.py", "/api/index"):
+        if path.startswith(prefix + "/"):
+            path = path[len(prefix):]
+            request.scope["path"] = path
+            break
+        elif path == prefix:
+            if method == "POST":
+                # A POST request directly hitting the serverless handler is a chat query
+                path = "/api/chat/stream"
+                request.scope["path"] = path
+            else:
+                path = "/"
+                request.scope["path"] = path
+            break
+
+    # 3. If a POST request arrives at "/" or "/api" or "/api/" with JSON body:
+    if method == "POST" and path in ("/", "/api", "/api/"):
+        content_type = request.headers.get("content-type", "")
+        if "application/json" in content_type:
+            path = "/api/chat/stream"
+            request.scope["path"] = path
 
     return await call_next(request)
 
@@ -214,8 +244,23 @@ async def upload(session_id: str = Form(""), files: List[UploadFile] = File(...)
     return {"files": saved}
 
 
+@app.get("/api/chat/stream")
+@app.get("/chat/stream")
+async def chat_stream_info():
+    return {
+        "status": "online",
+        "endpoint": "/api/chat/stream",
+        "method": "POST",
+        "description": "Siluria Agent chat streaming endpoint. Send POST request with JSON body."
+    }
+
+
 @app.post("/api/chat/stream")
 @app.post("/chat/stream")
+@app.post("/api/index.py")
+@app.post("/api/index")
+@app.post("/api")
+@app.post("/")
 async def chat_stream(request: ChatRequest):
     session_id = request.session_id
     if not session_id or not db.get_session(session_id):
@@ -229,9 +274,13 @@ async def chat_stream(request: ChatRequest):
 
     db.add_message(session_id, "user", request.query)
 
-    # Handle session title renaming
-    if request.query.strip() and db.get_session(session_id)["title"] == "New Session":
-        db.rename_session(session_id, request.query.strip()[:60])
+    # Handle session title renaming safely
+    try:
+        sess = db.get_session(session_id)
+        if sess and request.query.strip() and sess.get("title") == "New Session":
+            db.rename_session(session_id, request.query.strip()[:60])
+    except Exception:
+        pass
 
     return StreamingResponse(
         agent.stream_agent(
@@ -240,7 +289,12 @@ async def chat_stream(request: ChatRequest):
             file_paths=file_paths,
             links=request.links,
         ),
-        media_type="text/plain"
+        media_type="text/plain",
+        headers={
+            "Cache-Control": "no-cache, no-transform",
+            "X-Accel-Buffering": "no",
+            "Connection": "keep-alive",
+        }
     )
 
 

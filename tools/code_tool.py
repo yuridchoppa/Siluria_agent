@@ -15,7 +15,12 @@ def execute_python(code: str) -> str:
     Useful for data analysis, system file generation, or complex scripting.
     """
     filename = "temp_execution.py"
-    filepath = os.path.join(WORKSPACE_DIR, filename)
+    try:
+        os.makedirs(WORKSPACE_DIR, exist_ok=True)
+        filepath = os.path.join(WORKSPACE_DIR, filename)
+    except Exception:
+        import tempfile
+        filepath = os.path.join(tempfile.gettempdir(), filename)
 
     try:
         # Write the code to a file
@@ -24,8 +29,8 @@ def execute_python(code: str) -> str:
 
         # Execute it
         result = subprocess.run(
-            ["python", filepath],
-            cwd=WORKSPACE_DIR,
+            [sys.executable, filepath],
+            cwd=os.path.dirname(filepath),
             capture_output=True,
             text=True,
             timeout=CODE_EXEC_TIMEOUT

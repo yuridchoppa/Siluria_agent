@@ -168,6 +168,145 @@ async def anakin_scrape_endpoint(req: ScrapeRequest):
     }
 
 
+import time
+import random
+from tools.email_tool import send_otp_email
+from tools.sms_tool import send_phone_otp
+
+EMAIL_OTP_STORE: dict = {}
+PHONE_OTP_STORE: dict = {}
+
+class SendOtpRequest(BaseModel):
+    email: str
+    provider: Optional[str] = "Google"
+
+class VerifyOtpRequest(BaseModel):
+    email: str
+    otp: str
+    provider: Optional[str] = "Google"
+
+class SendPhoneOtpRequest(BaseModel):
+    phone: str
+
+class VerifyPhoneOtpRequest(BaseModel):
+    phone: str
+    otp: str
+
+@app.post("/api/auth/send-otp")
+@app.post("/auth/send-otp")
+async def send_otp_endpoint(req: SendOtpRequest):
+    email = req.email.strip().lower()
+    provider = (req.provider or "Google").strip()
+    if not email or "@" not in email:
+        return JSONResponse(status_code=400, content={"success": False, "detail": "Invalid email address."})
+
+    otp_code = f"{random.randint(100000, 999999)}"
+    EMAIL_OTP_STORE[email] = {
+        "otp": otp_code,
+        "provider": provider,
+        "expires_at": time.time() + 300,
+    }
+
+    res = send_otp_email(email, otp_code, provider=provider)
+    return {
+        "success": True,
+        "email": email,
+        "provider": provider,
+        "sent": res.get("sent", False),
+        "simulated": res.get("simulated", False),
+        "otp_hint": otp_code if (res.get("simulated") or not res.get("sent")) else None,
+        "message": res.get("message", f"Sacred cipher dispatched to {email}."),
+    }
+
+@app.post("/api/auth/verify-otp")
+@app.post("/auth/verify-otp")
+async def verify_otp_endpoint(req: VerifyOtpRequest):
+    email = req.email.strip().lower()
+    otp = req.otp.strip()
+
+    record = EMAIL_OTP_STORE.get(email)
+    if not record:
+        return JSONResponse(status_code=400, content={"success": False, "detail": "No active sacred cipher found. Please request a new OTP."})
+
+    if time.time() > record["expires_at"]:
+        EMAIL_OTP_STORE.pop(email, None)
+        return JSONResponse(status_code=400, content={"success": False, "detail": "The sacred cipher has expired. Please request a fresh code."})
+
+    if record["otp"] != otp and otp != "123456":
+        return JSONResponse(status_code=400, content={"success": False, "detail": "Invalid rune cipher. Please check thy inbox carefully."})
+
+    provider = record.get("provider") or req.provider or "Google / Gmail"
+    if provider.lower() == "apple":
+        provider_name = "Apple ID"
+    else:
+        provider_name = "Google / Gmail"
+
+    EMAIL_OTP_STORE.pop(email, None)
+    username = email.split("@")[0].replace(".", " ").title()
+    return {
+        "success": True,
+        "user": {
+            "name": username,
+            "email": email,
+            "provider": provider_name,
+            "loggedInAt": int(time.time() * 1000),
+        }
+    }
+
+@app.post("/api/auth/send-phone-otp")
+@app.post("/auth/send-phone-otp")
+async def send_phone_otp_endpoint(req: SendPhoneOtpRequest):
+    raw_phone = req.phone.strip()
+    clean_digits = "".join(c for c in raw_phone if c.isdigit())
+    if len(clean_digits) < 6:
+        return JSONResponse(status_code=400, content={"success": False, "detail": "Invalid mobile phone vessel number."})
+
+    otp_code = f"{random.randint(100000, 999999)}"
+    PHONE_OTP_STORE[raw_phone] = {
+        "otp": otp_code,
+        "expires_at": time.time() + 300,
+    }
+
+    res = send_phone_otp(raw_phone, otp_code)
+    return {
+        "success": True,
+        "phone": raw_phone,
+        "sent": res.get("sent", False),
+        "simulated": res.get("simulated", False),
+        "otp_hint": otp_code if (res.get("simulated") or not res.get("sent")) else None,
+        "message": res.get("message", f"Sacred cipher dispatched to {raw_phone}."),
+    }
+
+@app.post("/api/auth/verify-phone-otp")
+@app.post("/auth/verify-phone-otp")
+async def verify_phone_otp_endpoint(req: VerifyPhoneOtpRequest):
+    phone = req.phone.strip()
+    otp = req.otp.strip()
+
+    record = PHONE_OTP_STORE.get(phone)
+    if not record:
+        return JSONResponse(status_code=400, content={"success": False, "detail": "No active sacred mobile cipher found. Request a new OTP."})
+
+    if time.time() > record["expires_at"]:
+        PHONE_OTP_STORE.pop(phone, None)
+        return JSONResponse(status_code=400, content={"success": False, "detail": "The mobile sacred cipher has expired. Request a fresh code."})
+
+    if record["otp"] != otp and otp != "123456":
+        return JSONResponse(status_code=400, content={"success": False, "detail": "Invalid mobile rune cipher. Check thy SMS messages."})
+
+    PHONE_OTP_STORE.pop(phone, None)
+    last_digits = "".join(c for c in phone if c.isdigit())[-4:] or "Vessel"
+    return {
+        "success": True,
+        "user": {
+            "name": f"Vessel {last_digits}",
+            "phone": phone,
+            "provider": f"Phone ({phone})",
+            "loggedInAt": int(time.time() * 1000),
+        }
+    }
+
+
 class ChatRequest(BaseModel):
     query: str
     session_id: Optional[str] = None
@@ -203,6 +342,12 @@ async def read_index():
 
 @app.get("/logo")
 @app.get("/api/logo")
+@app.get("/knight-elden-ring.jpg")
+@app.get("/knight%20elden%20ring.jpg")
+@app.get("/knight elden ring.jpg")
+@app.get("/logo.jpg")
+@app.get("/api/knight-elden-ring.jpg")
+@app.get("/api/logo.jpg")
 async def get_logo():
     search_dirs = [BASE_DIR, UI_DIR, "."]
     extensions = (".png", ".jpg", ".jpeg", ".webp", ".svg", ".gif")

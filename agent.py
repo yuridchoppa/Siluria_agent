@@ -255,10 +255,13 @@ class SiluriaAgent:
         messages.append({"role": "user", "content": user_content})
 
         last_error = None
+        current_messages = list(messages)
+        tools_executed = set()
+
         for model in self._models():
             chunks_sent: List[str] = []
             try:
-                for chunk_text in self._agentic_stream(model, list(messages)):
+                for chunk_text in self._agentic_stream(model, current_messages, tools_executed):
                     chunks_sent.append(chunk_text)
                     yield chunk_text
 
@@ -274,22 +277,28 @@ class SiluriaAgent:
                 err = str(e)
                 last_error = e
                 print(f"Model {model} failed: {err}")
+                # If error is rate limit / quota, record it
+                if "429" in err or "quota" in err.lower() or "resource_exhausted" in err.lower():
+                    last_error = Exception(f"Google Gemini Free Tier daily/minute quota reached ({err[:120]}). Please switch models or try again in a few moments.")
                 continue  # try next model fallback
 
         if last_error:
-            yield f"\n\n⚠️ **Communication Error:** All available models failed to respond.\n*Last error:* `{last_error}`\n\nPlease verify your API key (`GEMINI_API_KEY` or `ANAKIN_API_KEY`) in your Vercel Environment Variables."
+            yield f"\n\n⚠️ **Communication Notice:** All available models encountered an issue.\n*Details:* `{last_error}`\n\nPlease check your model quota or API keys in your environment variables."
 
     def _agentic_stream(
         self,
         model: str,
         messages: List[Dict[str, Any]],
+        tools_executed: set,
     ) -> Generator[str, None, None]:
         """
         Agentic loop for one model: tool-call rounds followed by a streamed final answer.
         """
+        has_run_search = any(m.get("role") == "tool" and m.get("name") == "search_web" for m in messages)
+
         for _round in range(MAX_TOOL_ROUNDS):
-            # On the final tool round, force synthesis without requesting further tools
-            is_final_round = (_round == MAX_TOOL_ROUNDS - 1)
+            # If search already completed or it's the final tool round, force synthesis
+            is_final_round = (_round == MAX_TOOL_ROUNDS - 1) or has_run_search
             try:
                 response = self.client.chat.completions.create(
                     model=model,
@@ -299,9 +308,8 @@ class SiluriaAgent:
                     stream=False
                 )
             except Exception as e:
-                # If function calling is not supported by the model/endpoint, fall back to plain completion
                 err_str = str(e).lower()
-                if any(k in err_str for k in ("tools", "function", "unrecognized", "schema", "argument")):
+                if any(k in err_str for k in ("tools", "function", "unrecognized", "schema", "argument", "tool_choice")):
                     stream = self.client.chat.completions.create(
                         model=model,
                         messages=messages,
@@ -318,10 +326,11 @@ class SiluriaAgent:
             msg = choice.message
 
             if not msg.tool_calls:
-                # The model produced the final answer
+                # The model produced the answer
                 if msg.content:
                     yield msg.content
                 else:
+                    # Stream synthesis if content was empty
                     stream = self.client.chat.completions.create(
                         model=model,
                         messages=messages,
@@ -333,11 +342,18 @@ class SiluriaAgent:
                             yield delta.content
                 return
 
-            # Tool calls encountered
-            tool_names = ", ".join([tc.function.name for tc in msg.tool_calls])
-            yield f"\n\n*⚜ Communing with {tool_names}...*\n\n"
+            # Tool calls encountered - notify user cleanly without repeating identical notices
+            new_tools = [tc.function.name for tc in msg.tool_calls if tc.function.name not in tools_executed]
+            if new_tools:
+                tool_names = ", ".join(new_tools)
+                yield f"\n\n*⚜ Communing with {tool_names}...*\n\n"
+                tools_executed.update(new_tools)
+            elif not tools_executed:
+                tool_names = ", ".join([tc.function.name for tc in msg.tool_calls])
+                yield f"\n\n*⚜ Communing with {tool_names}...*\n\n"
+                tools_executed.update([tc.function.name for tc in msg.tool_calls])
 
-            # Build clean assistant message preserving tool calls
+            # Build clean assistant message preserving tool calls & thought signatures
             asst_dict: Dict[str, Any] = {
                 "role": "assistant",
                 "tool_calls": []
@@ -375,18 +391,33 @@ class SiluriaAgent:
                     "name": fn_name,
                     "content": result_str
                 })
+                if fn_name == "search_web":
+                    has_run_search = True
 
-        # If tool rounds completed without generating final text, synthesize the final answer
+        # If tool rounds completed, synthesize final answer
         try:
             stream = self.client.chat.completions.create(
                 model=model,
                 messages=messages,
                 stream=True
             )
+            has_synthesized = False
             for chunk in stream:
                 delta = chunk.choices[0].delta if chunk.choices else None
                 if delta and delta.content:
+                    has_synthesized = True
                     yield delta.content
+            if not has_synthesized:
+                # Prompt explicit synthesis fallback if model returned empty
+                fallback_resp = self.client.chat.completions.create(
+                    model=model,
+                    messages=messages + [{"role": "user", "content": "Please synthesize the final answer based on the findings above."}],
+                    stream=True
+                )
+                for chunk in fallback_resp:
+                    delta = chunk.choices[0].delta if chunk.choices else None
+                    if delta and delta.content:
+                        yield delta.content
         except Exception as synth_err:
             print(f"Final synthesis error on {model}: {synth_err}")
             raise synth_err

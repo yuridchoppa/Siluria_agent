@@ -37,8 +37,8 @@ if GEMINI_API_KEY:
     ACTIVE_PROVIDER = "gemini"
     LLM_API_KEY = GEMINI_API_KEY
     LLM_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai/"
-    DEFAULT_MODEL = (os.getenv("DEFAULT_MODEL") or "gemini-flash-latest").strip()
-    raw_fallbacks = (os.getenv("MODEL_FALLBACKS") or "gemini-flash-latest,gemini-3-flash-preview,gemini-3.1-flash-lite-preview").strip()
+    DEFAULT_MODEL = (os.getenv("DEFAULT_MODEL") or "gemini-3.6-flash").strip()
+    raw_fallbacks = (os.getenv("MODEL_FALLBACKS") or "gemini-3.6-flash,gemini-3.1-flash-lite-preview,gemini-flash-latest").strip()
 elif ANAKIN_API_KEY:
     ACTIVE_PROVIDER = "anakin"
     LLM_API_KEY = ANAKIN_API_KEY

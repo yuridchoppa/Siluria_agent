@@ -683,26 +683,35 @@
         /* Logo Area */
         .logo-wrap {
             position: relative;
-            margin: 2px 0 6px;
+            margin: 4px 0 8px;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
         #logo-img {
-            width: 90px; height: 90px;
+            width: 96px; height: 96px;
             object-fit: cover;
+            object-position: center top;
             border-radius: 50%;
             border: 2px solid var(--gold);
-            box-shadow: 0 0 25px rgba(229, 193, 88, 0.4), inset 0 0 15px #000;
-            image-rendering: pixelated;
+            box-shadow: 0 0 25px rgba(229, 193, 88, 0.45), inset 0 0 15px #000;
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            z-index: 2;
+            cursor: pointer;
+        }
+        #logo-img:hover {
+            transform: scale(1.08);
+            border-color: var(--gold-bright);
+            box-shadow: 0 0 40px rgba(229, 193, 88, 0.85), 0 0 15px var(--gold-bright);
         }
         .logo-ring {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            border-radius: 50%; border: 1px solid rgba(229,193,88,0.3);
+            border-radius: 50%; border: 1px solid rgba(229,193,88,0.35);
             pointer-events: none; animation: ringPulse 4s infinite alternate;
         }
-        .logo-ring:nth-child(2) { width: 104px; height: 104px; }
-        .logo-ring:nth-child(3) { width: 120px; height: 120px; border-color: rgba(229,193,88,0.15); animation-delay: 1s; }
+        .logo-ring:nth-child(2) { width: 112px; height: 112px; }
+        .logo-ring:nth-child(3) { width: 128px; height: 128px; border-color: rgba(229,193,88,0.18); animation-delay: 1s; }
         @keyframes ringPulse { 0% { transform: translate(-50%,-50%) scale(1); opacity: 0.4; } 100% { transform: translate(-50%,-50%) scale(1.05); opacity: 0.9; } }
 
         .logo-title {
@@ -713,6 +722,121 @@
             text-transform: uppercase;
             margin-top: 6px;
             text-shadow: 0 0 20px var(--gold-glow);
+        }
+
+        /* Atmospheric Elden Ring Knight Background Watermark */
+        .bg-knight-backdrop {
+            position: fixed;
+            right: 3%;
+            bottom: 3%;
+            width: 520px;
+            height: 520px;
+            background-image: url('/logo'), url('knight-elden-ring.jpg'), url('/knight-elden-ring.jpg');
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-size: cover;
+            opacity: 0.12;
+            filter: drop-shadow(0 0 45px rgba(229,193,88,0.3)) contrast(115%);
+            pointer-events: none;
+            z-index: 2;
+            border-radius: 50%;
+            mask-image: radial-gradient(circle at 50% 50%, rgba(0,0,0,0.95) 30%, transparent 72%);
+            -webkit-mask-image: radial-gradient(circle at 50% 50%, rgba(0,0,0,0.95) 30%, transparent 72%);
+            animation: knightSubtleBreath 14s ease-in-out infinite alternate;
+        }
+        @keyframes knightSubtleBreath {
+            0% { transform: scale(1) translateY(0); opacity: 0.08; }
+            50% { opacity: 0.15; }
+            100% { transform: scale(1.05) translateY(-8px); opacity: 0.11; }
+        }
+
+        /* Empty State Knight Hero */
+        .empty-knight-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .empty-knight-img {
+            width: 104px;
+            height: 104px;
+            border-radius: 50%;
+            object-fit: cover;
+            object-position: center top;
+            border: 2px solid var(--gold);
+            box-shadow: 0 0 30px rgba(229, 193, 88, 0.5), inset 0 0 20px #000;
+            position: relative;
+            z-index: 2;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .empty-knight-img:hover {
+            transform: scale(1.05);
+            border-color: var(--gold-bright);
+            box-shadow: 0 0 40px rgba(229, 193, 88, 0.85);
+        }
+        .empty-knight-ring {
+            position: absolute;
+            border-radius: 50%;
+            border: 1px solid rgba(229, 193, 88, 0.35);
+            pointer-events: none;
+            animation: ringPulse 4s infinite alternate;
+        }
+        .empty-knight-ring.r1 { width: 124px; height: 124px; }
+        .empty-knight-ring.r2 { width: 142px; height: 142px; border-color: rgba(229, 193, 88, 0.18); animation-delay: 1.5s; }
+        .empty-knight-title {
+            font-family: 'Cinzel', serif;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 0.35rem;
+            color: var(--gold-bright);
+            text-shadow: 0 0 14px var(--gold-glow);
+            margin-bottom: 8px;
+        }
+        .empty-knight-sub {
+            font-family: 'IM Fell English', serif;
+            font-style: italic;
+            color: var(--text-muted);
+            font-size: 17px;
+            max-width: 600px;
+            margin: 0 auto 12px;
+            line-height: 1.5;
+        }
+
+        /* Login Modal Knight Emblem */
+        .login-knight-avatar {
+            width: 76px;
+            height: 76px;
+            margin: 0 auto 12px;
+            border-radius: 50%;
+            border: 2px solid var(--gold);
+            box-shadow: 0 0 20px rgba(229, 193, 88, 0.45);
+            overflow: hidden;
+            background: #000;
+        }
+        .login-knight-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center top;
+            display: block;
+        }
+
+        /* Chat Message Knight Avatar */
+        .msg-knight-avatar {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 1px solid var(--gold);
+            object-fit: cover;
+            object-position: center top;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 6px;
+            box-shadow: 0 0 8px rgba(229, 193, 88, 0.4);
         }
 
         /* ═══════════════════════════════
@@ -1045,6 +1169,7 @@
     <div class="bg-fog" id="fogLayer"></div>
     <div class="bg-erdtree"></div>
     <div class="bg-erdtree-wide"></div>
+    <div class="bg-knight-backdrop"></div>
     <div class="layer-scanlines"></div>
     <div class="layer-vignette"></div>
 
@@ -1123,7 +1248,7 @@
             <div class="logo-ring"></div>
             <div class="logo-ring"></div>
             <div class="logo-ring"></div>
-            <img id="logo-img" src="/logo" alt="Siluria Knight" onerror="this.style.display='none'">
+            <img id="logo-img" src="/logo" alt="Siluria Knight" onerror="if(!this.dataset.retry){this.dataset.retry=1;this.src='knight-elden-ring.jpg';}else if(this.dataset.retry==1){this.dataset.retry=2;this.src='/knight%20elden%20ring.jpg';}else if(this.dataset.retry==2){this.dataset.retry=3;this.src='logo.jpg';}">
             <div class="logo-title">S I L U R I A</div>
         </div>
 
@@ -1131,8 +1256,14 @@
         <div class="chat-panel">
             <div id="chatbox">
                 <div class="empty-state">
-                    <div style="margin-bottom: 20px;">"The grace burns bright. Speak thy inquiry, and knowledge shall be bestowed."</div>
-                    <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; max-width: 720px; margin: 0 auto;">
+                    <div class="empty-knight-container">
+                        <div class="empty-knight-ring r1"></div>
+                        <div class="empty-knight-ring r2"></div>
+                        <img class="empty-knight-img" src="/logo" onerror="if(!this.dataset.retry){this.dataset.retry=1;this.src='knight-elden-ring.jpg';}else if(this.dataset.retry==1){this.dataset.retry=2;this.src='/knight%20elden%20ring.jpg';}else if(this.dataset.retry==2){this.dataset.retry=3;this.src='logo.jpg';}" alt="Siluria Knight">
+                    </div>
+                    <div class="empty-knight-title">CRUCIBLE KNIGHT SILURIA</div>
+                    <div class="empty-knight-sub">"The grace burns bright. Speak thy inquiry, and ancient knowledge shall be bestowed."</div>
+                    <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; max-width: 720px; margin: 20px auto 0;">
                         <button class="prompt-chip" onclick="setInputAndSend('Search the web for the latest AI agent news and extract with AnakinScraper')">⚡ Live AI News (AnakinScraper)</button>
                         <button class="prompt-chip" onclick="setInputAndSend('Scrape https://news.ycombinator.com using AnakinScraper and summarize top stories')">🌐 Hacker News Extraction</button>
                         <button class="prompt-chip" onclick="setInputAndSend('Evaluate the integral of x^2 * exp(-x) with respect to x using math evaluation')">🔬 Calculus & Math Engine</button>
@@ -1184,6 +1315,9 @@
             <button class="btn-close-modal" id="btn-close-login" title="Close Sanctuary">✕</button>
             
             <div class="login-header">
+                <div class="login-knight-avatar">
+                    <img src="/logo" onerror="if(!this.dataset.retry){this.dataset.retry=1;this.src='knight-elden-ring.jpg';}else if(this.dataset.retry==1){this.dataset.retry=2;this.src='/knight%20elden%20ring.jpg';}else if(this.dataset.retry==2){this.dataset.retry=3;this.src='logo.jpg';}" alt="Siluria Knight">
+                </div>
                 <div class="login-badge">⚜ THE GREAT ORDER ⚜</div>
                 <div class="login-title" id="auth-main-title">KINDLE THE GRACE</div>
                 <div class="login-subtitle" id="auth-sub-title">Enter the sacred realm & commune with the ancient intellect</div>
@@ -1208,7 +1342,7 @@
 
             <!-- Social & Provider Sign In (Default / Recommended) -->
             <div id="social-login-section" class="social-login-grid">
-                <button type="button" class="btn-social google" onclick="handleGoogleRedirect()">
+                <button type="button" class="btn-social google" onclick="handleGoogleOption()">
                     <span class="social-icon-box">
                         <svg width="20" height="20" viewBox="0 0 24 24">
                             <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17Z"/>
@@ -1219,12 +1353,12 @@
                     </span>
                     <div class="social-text-col">
                         <span class="social-text-title">Continue with Gmail / Google</span>
-                        <span class="social-text-sub">Redirects to Google Account access</span>
+                        <span class="social-text-sub">Access via Gmail & Sacred Email OTP</span>
                     </div>
                     <span class="social-arrow">→</span>
                 </button>
 
-                <button type="button" class="btn-social apple" onclick="handleAppleRedirect()">
+                <button type="button" class="btn-social apple" onclick="handleAppleOption()">
                     <span class="social-icon-box">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="#ffffff">
                             <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.85c.66-.8 1.11-1.92.99-3.04-.96.04-2.12.64-2.8 1.44-.61.71-1.14 1.86-1 2.97 1.07.08 2.15-.57 2.81-1.37z"/>
@@ -1232,7 +1366,7 @@
                     </span>
                     <div class="social-text-col">
                         <span class="social-text-title">Continue with Apple</span>
-                        <span class="social-text-sub">Redirects to Apple ID sign in</span>
+                        <span class="social-text-sub">Access via Apple ID & Sacred Email OTP</span>
                     </div>
                     <span class="social-arrow">→</span>
                 </button>
@@ -1251,6 +1385,84 @@
                     </div>
                     <span class="social-arrow">→</span>
                 </button>
+            </div>
+
+            <!-- Google / Gmail Authentication Flow -->
+            <div id="google-auth-panel" class="phone-auth-panel">
+                <div id="google-step-1">
+                    <div class="input-helper-label">ENTER THY GMAIL / GOOGLE SANCTUARY:</div>
+                    <div style="margin-bottom: 12px;">
+                        <input type="email" id="auth-google-email" class="login-input" style="width:100%;" placeholder="e.g. proxy.vessel@gmail.com" onkeydown="if(event.key==='Enter') sendGoogleOtp()">
+                    </div>
+                    <button type="button" class="btn-auth" style="margin-top:4px;" id="btn-send-google-otp" onclick="sendGoogleOtp()">
+                        <span>⚜</span>
+                        <span>DISPATCH SACRED CIPHER (OTP) TO GMAIL</span>
+                    </button>
+                    <div style="display:flex; justify-content:flex-end; margin-top:8px;">
+                        <button type="button" class="btn-phone-secondary" onclick="closeGoogleAuth()">← Back to Providers</button>
+                    </div>
+                </div>
+
+                <div id="google-step-2" style="display:none;">
+                    <div class="input-helper-label" id="google-otp-label">SACRED CIPHER DISPATCHED TO GMAIL:</div>
+                    <div class="otp-inputs-grid">
+                        <input type="text" maxlength="1" class="otp-digit google-otp-digit" data-idx="0">
+                        <input type="text" maxlength="1" class="otp-digit google-otp-digit" data-idx="1">
+                        <input type="text" maxlength="1" class="otp-digit google-otp-digit" data-idx="2">
+                        <input type="text" maxlength="1" class="otp-digit google-otp-digit" data-idx="3">
+                        <input type="text" maxlength="1" class="otp-digit google-otp-digit" data-idx="4">
+                        <input type="text" maxlength="1" class="otp-digit google-otp-digit" data-idx="5">
+                    </div>
+                    <div id="google-otp-hint-btn" style="text-align:center; margin-bottom:6px;"></div>
+                    <div class="otp-timer-text" id="google-otp-timer-display">Resend cipher in <span>60s</span></div>
+                    <button type="button" class="btn-auth" style="margin-top:4px;" id="btn-verify-google-otp" onclick="verifyGoogleOtp()">
+                        <span>⚜</span>
+                        <span>VERIFY RUNE & ENTER</span>
+                    </button>
+                    <div style="display:flex; justify-content:space-between; margin-top:8px;">
+                        <button type="button" class="btn-phone-secondary" id="btn-resend-google-otp" onclick="resendGoogleOtp()" disabled>Resend Code</button>
+                        <button type="button" class="btn-phone-secondary" onclick="resetGoogleAuth()">← Change Email</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Apple ID Authentication Flow -->
+            <div id="apple-auth-panel" class="phone-auth-panel">
+                <div id="apple-step-1">
+                    <div class="input-helper-label">ENTER THY APPLE ID / ICLOUD SANCTUARY:</div>
+                    <div style="margin-bottom: 12px;">
+                        <input type="email" id="auth-apple-email" class="login-input" style="width:100%;" placeholder="e.g. proxy.vessel@icloud.com" onkeydown="if(event.key==='Enter') sendAppleOtp()">
+                    </div>
+                    <button type="button" class="btn-auth" style="margin-top:4px;" id="btn-send-apple-otp" onclick="sendAppleOtp()">
+                        <span>⚜</span>
+                        <span>DISPATCH SACRED CIPHER (OTP) TO APPLE ID</span>
+                    </button>
+                    <div style="display:flex; justify-content:flex-end; margin-top:8px;">
+                        <button type="button" class="btn-phone-secondary" onclick="closeAppleAuth()">← Back to Providers</button>
+                    </div>
+                </div>
+
+                <div id="apple-step-2" style="display:none;">
+                    <div class="input-helper-label" id="apple-otp-label">SACRED CIPHER DISPATCHED TO APPLE ID:</div>
+                    <div class="otp-inputs-grid">
+                        <input type="text" maxlength="1" class="otp-digit apple-otp-digit" data-idx="0">
+                        <input type="text" maxlength="1" class="otp-digit apple-otp-digit" data-idx="1">
+                        <input type="text" maxlength="1" class="otp-digit apple-otp-digit" data-idx="2">
+                        <input type="text" maxlength="1" class="otp-digit apple-otp-digit" data-idx="3">
+                        <input type="text" maxlength="1" class="otp-digit apple-otp-digit" data-idx="4">
+                        <input type="text" maxlength="1" class="otp-digit apple-otp-digit" data-idx="5">
+                    </div>
+                    <div id="apple-otp-hint-btn" style="text-align:center; margin-bottom:6px;"></div>
+                    <div class="otp-timer-text" id="apple-otp-timer-display">Resend cipher in <span>60s</span></div>
+                    <button type="button" class="btn-auth" style="margin-top:4px;" id="btn-verify-apple-otp" onclick="verifyAppleOtp()">
+                        <span>⚜</span>
+                        <span>VERIFY RUNE & ENTER</span>
+                    </button>
+                    <div style="display:flex; justify-content:space-between; margin-top:8px;">
+                        <button type="button" class="btn-phone-secondary" id="btn-resend-apple-otp" onclick="resendAppleOtp()" disabled>Resend Code</button>
+                        <button type="button" class="btn-phone-secondary" onclick="resetAppleAuth()">← Change Email</button>
+                    </div>
+                </div>
             </div>
 
             <!-- Phone Authentication Flow -->
@@ -1444,6 +1656,12 @@
     let otpCountdownInterval = null;
     let currentPendingPhone = "";
 
+    window.cancelRedirect = () => {
+        if (redirectTimer) clearTimeout(redirectTimer);
+        const overlay = document.getElementById('redirect-overlay');
+        if (overlay) overlay.classList.remove('show');
+    };
+
     // Toggle Profile Popover or Open Login Modal
     document.getElementById('btn-login').onclick = (e) => {
         e.stopPropagation();
@@ -1512,6 +1730,9 @@
         const btnAuthText = document.getElementById('btn-auth-text');
         const manualTip = document.getElementById('manual-tip-notice');
 
+        const googlePanel = document.getElementById('google-auth-panel');
+        const applePanel = document.getElementById('apple-auth-panel');
+
         // Reset tabs
         [tabSignin, tabManual, tabSignup].forEach(t => t && t.classList.remove('active'));
 
@@ -1521,6 +1742,8 @@
             subTitle.textContent = 'Commune with ancient intellect via thy chosen provider';
             if (socialSec) socialSec.style.display = 'flex';
             if (phonePanel) phonePanel.classList.remove('show');
+            if (googlePanel) googlePanel.classList.remove('show');
+            if (applePanel) applePanel.classList.remove('show');
             if (manualSec) manualSec.style.display = 'none';
         } else if (mode === 'manual') {
             if (tabManual) tabManual.classList.add('active');
@@ -1528,6 +1751,8 @@
             subTitle.textContent = 'Commune using thy existing vessel credentials';
             if (socialSec) socialSec.style.display = 'none';
             if (phonePanel) phonePanel.classList.remove('show');
+            if (googlePanel) googlePanel.classList.remove('show');
+            if (applePanel) applePanel.classList.remove('show');
             if (manualSec) manualSec.style.display = 'block';
             signupFields.forEach(el => el.style.display = 'none');
             if (emailInput) emailInput.required = false;
@@ -1541,6 +1766,8 @@
             subTitle.textContent = 'Bind a new vessel to the eternal order of Siluria';
             if (socialSec) socialSec.style.display = 'none';
             if (phonePanel) phonePanel.classList.remove('show');
+            if (googlePanel) googlePanel.classList.remove('show');
+            if (applePanel) applePanel.classList.remove('show');
             if (manualSec) manualSec.style.display = 'block';
             signupFields.forEach(el => el.style.display = 'block');
             if (emailInput) emailInput.required = true;
@@ -1552,65 +1779,406 @@
     };
 
     // ─────────────────────────────────────────
-    // PROVIDER REDIRECTS (Google / Apple)
+    // GOOGLE / GMAIL EMAIL OTP AUTHENTICATION FLOW
     // ─────────────────────────────────────────
-    window.handleGoogleRedirect = () => {
-        const overlay = document.getElementById('redirect-overlay');
-        const title = document.getElementById('redirect-overlay-title');
-        const subtitle = document.getElementById('redirect-overlay-subtitle');
-        const directBtn = document.getElementById('redirect-btn-direct');
+    let googleOtpCountdownInterval = null;
+    let currentPendingGoogleEmail = '';
 
-        const callbackUrl = window.location.origin + window.location.pathname + '?auth_callback=google';
-        const googleLoginUrl = 'https://accounts.google.com/AccountChooser?continue=' + encodeURIComponent(callbackUrl);
+    window.handleGoogleOption = () => {
+        document.getElementById('social-login-section').style.display = 'none';
+        const googlePanel = document.getElementById('google-auth-panel');
+        if (googlePanel) googlePanel.classList.add('show');
+        document.getElementById('google-step-1').style.display = 'block';
+        document.getElementById('google-step-2').style.display = 'none';
+        setTimeout(() => document.getElementById('auth-google-email')?.focus(), 80);
+    };
+    window.handleGoogleRedirect = window.handleGoogleOption;
 
-        localStorage.setItem('siluria_pending_auth', JSON.stringify({
-            provider: 'Google',
-            targetUrl: googleLoginUrl,
-            timestamp: Date.now()
-        }));
-
-        title.textContent = 'COMMUNING WITH GOOGLE REALM...';
-        subtitle.textContent = 'Redirecting to accounts.google.com to access thy Gmail account...';
-        directBtn.onclick = () => { window.location.href = googleLoginUrl; };
-        overlay.classList.add('show');
-
-        redirectTimer = setTimeout(() => {
-            window.location.href = googleLoginUrl;
-        }, 1100);
+    window.closeGoogleAuth = () => {
+        const googlePanel = document.getElementById('google-auth-panel');
+        if (googlePanel) googlePanel.classList.remove('show');
+        const socialSec = document.getElementById('social-login-section');
+        if (socialSec && currentAuthMode === 'signin') socialSec.style.display = 'flex';
+        if (googleOtpCountdownInterval) clearInterval(googleOtpCountdownInterval);
     };
 
-    window.handleAppleRedirect = () => {
-        const overlay = document.getElementById('redirect-overlay');
-        const title = document.getElementById('redirect-overlay-title');
-        const subtitle = document.getElementById('redirect-overlay-subtitle');
-        const directBtn = document.getElementById('redirect-btn-direct');
-
-        const callbackUrl = window.location.origin + window.location.pathname + '?auth_callback=apple';
-        const appleLoginUrl = 'https://appleid.apple.com/sign-in';
-
-        localStorage.setItem('siluria_pending_auth', JSON.stringify({
-            provider: 'Apple',
-            targetUrl: appleLoginUrl,
-            timestamp: Date.now()
-        }));
-
-        title.textContent = 'COMMUNING WITH APPLE ID SANCTUARY...';
-        subtitle.textContent = 'Redirecting to appleid.apple.com to verify thy Apple vessel...';
-        directBtn.onclick = () => { window.location.href = appleLoginUrl; };
-        overlay.classList.add('show');
-
-        redirectTimer = setTimeout(() => {
-            window.location.href = appleLoginUrl;
-        }, 1100);
+    window.resetGoogleAuth = () => {
+        document.getElementById('google-step-1').style.display = 'block';
+        document.getElementById('google-step-2').style.display = 'none';
+        if (googleOtpCountdownInterval) clearInterval(googleOtpCountdownInterval);
+        setTimeout(() => document.getElementById('auth-google-email')?.focus(), 80);
     };
 
-    window.cancelRedirect = () => {
-        if (redirectTimer) {
-            clearTimeout(redirectTimer);
-            redirectTimer = null;
+    window.sendGoogleOtp = async () => {
+        const emailInput = document.getElementById('auth-google-email');
+        const email = emailInput ? emailInput.value.trim().toLowerCase() : '';
+
+        if (!email || !email.includes('@') || !email.includes('.')) {
+            alert("Please enter a valid Google or Gmail address.");
+            emailInput?.focus();
+            return;
         }
-        const overlay = document.getElementById('redirect-overlay');
-        if (overlay) overlay.classList.remove('show');
+
+        const sendBtn = document.getElementById('btn-send-google-otp');
+        if (sendBtn) {
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = `<span>⏳</span><span>DISPATCHING RUNE CIPHER...</span>`;
+        }
+
+        try {
+            const res = await fetch('/api/auth/send-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email })
+            });
+            const data = await res.json();
+
+            if (!res.ok || !data.success) {
+                alert(data.detail || data.message || "Failed to dispatch sacred cipher.");
+                return;
+            }
+
+            currentPendingGoogleEmail = email;
+            document.getElementById('google-step-1').style.display = 'none';
+            document.getElementById('google-step-2').style.display = 'block';
+            document.getElementById('google-otp-label').textContent = `SACRED CIPHER DISPATCHED TO: ${email}`;
+
+            const hintBtn = document.getElementById('google-otp-hint-btn');
+            if (hintBtn) {
+                if (data.otp_hint) {
+                    hintBtn.innerHTML = `<button type="button" style="background:rgba(229,193,88,0.15); border:1px dashed var(--gold); color:var(--gold-bright); font-family:'Cinzel',serif; font-size:11px; padding:4px 10px; cursor:pointer; border-radius:3px; margin-top:4px;" onclick="prefillGoogleOtp('${data.otp_hint}')">⚜ Tap to Auto-Fill Rune Cipher [${data.otp_hint}]</button>`;
+                } else {
+                    hintBtn.innerHTML = `<span style="font-size:11px; color:#a1a1aa;">Check thy Gmail inbox (or Spam folder) for the 6-digit cipher.</span>`;
+                }
+            }
+
+            setupGoogleOtpInputs();
+            startGoogleOtpTimer();
+        } catch (e) {
+            alert("Communion error: " + (e.message || e));
+        } finally {
+            if (sendBtn) {
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = `<span>⚜</span><span>DISPATCH SACRED CIPHER (OTP) TO GMAIL</span>`;
+            }
+        }
+    };
+
+    window.resendGoogleOtp = () => {
+        sendGoogleOtp();
+    };
+
+    window.prefillGoogleOtp = (code) => {
+        const digits = document.querySelectorAll('.google-otp-digit');
+        digits.forEach((d, i) => {
+            d.value = code[i] || '';
+        });
+        if (digits.length) digits[digits.length - 1].focus();
+    };
+
+    function setupGoogleOtpInputs() {
+        const digits = document.querySelectorAll('.google-otp-digit');
+        digits.forEach((digit, idx) => {
+            digit.value = '';
+            digit.oninput = (e) => {
+                const val = digit.value.replace(/\D/g, '');
+                digit.value = val ? val[val.length - 1] : '';
+                if (digit.value && idx < digits.length - 1) {
+                    digits[idx + 1].focus();
+                }
+            };
+            digit.onkeydown = (e) => {
+                if (e.key === 'Backspace' && !digit.value && idx > 0) {
+                    digits[idx - 1].focus();
+                } else if (e.key === 'Enter') {
+                    verifyGoogleOtp();
+                }
+            };
+            digit.onpaste = (e) => {
+                e.preventDefault();
+                const pasteData = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
+                if (pasteData) {
+                    pasteData.split('').forEach((char, i) => {
+                        if (digits[i]) digits[i].value = char;
+                    });
+                    if (digits[pasteData.length - 1]) digits[pasteData.length - 1].focus();
+                }
+            };
+        });
+        setTimeout(() => digits[0]?.focus(), 50);
+    }
+
+    function startGoogleOtpTimer() {
+        let seconds = 60;
+        const display = document.getElementById('google-otp-timer-display');
+        const resendBtn = document.getElementById('btn-resend-google-otp');
+        if (resendBtn) resendBtn.disabled = true;
+
+        if (googleOtpCountdownInterval) clearInterval(googleOtpCountdownInterval);
+        googleOtpCountdownInterval = setInterval(() => {
+            seconds--;
+            if (display) display.innerHTML = `Resend cipher in <span>${seconds}s</span>`;
+            if (seconds <= 0) {
+                clearInterval(googleOtpCountdownInterval);
+                if (display) display.innerHTML = `Cipher expired. Thou mayest resend.`;
+                if (resendBtn) resendBtn.disabled = false;
+            }
+        }, 1000);
+    }
+
+    window.verifyGoogleOtp = async () => {
+        const digits = document.querySelectorAll('.google-otp-digit');
+        let enteredCode = '';
+        digits.forEach(d => enteredCode += d.value.trim());
+
+        if (enteredCode.length !== 6) {
+            alert("Please enter the complete 6-digit sacred rune cipher.");
+            return;
+        }
+
+        const verifyBtn = document.getElementById('btn-verify-google-otp');
+        if (verifyBtn) {
+            verifyBtn.disabled = true;
+            verifyBtn.innerHTML = `<span>⏳</span><span>VERIFYING RUNE CIPHER...</span>`;
+        }
+
+        try {
+            const res = await fetch('/api/auth/verify-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: currentPendingGoogleEmail,
+                    otp: enteredCode
+                })
+            });
+            const data = await res.json();
+
+            if (!res.ok || !data.success) {
+                alert(data.detail || "Invalid sacred cipher. Verify thy code and try again.");
+                return;
+            }
+
+            const user = data.user || {
+                name: currentPendingGoogleEmail.split('@')[0],
+                email: currentPendingGoogleEmail,
+                provider: 'Google / Gmail',
+                loggedInAt: Date.now()
+            };
+
+            localStorage.setItem('siluria_auth_user', JSON.stringify(user));
+            closeLoginModal();
+            applyAuthenticatedState(user);
+            showAuthNotification(`⚜ Bound to Grace via Gmail (${user.email})!`);
+        } catch (e) {
+            alert("Verification error: " + (e.message || e));
+        } finally {
+            if (verifyBtn) {
+                verifyBtn.disabled = false;
+                verifyBtn.innerHTML = `<span>⚜</span><span>VERIFY RUNE & ENTER</span>`;
+            }
+        }
+    };
+
+    // ─────────────────────────────────────────
+    // APPLE ID EMAIL OTP AUTHENTICATION FLOW
+    // ─────────────────────────────────────────
+    let appleOtpCountdownInterval = null;
+    let currentPendingAppleEmail = '';
+
+    window.handleAppleOption = () => {
+        document.getElementById('social-login-section').style.display = 'none';
+        const applePanel = document.getElementById('apple-auth-panel');
+        if (applePanel) applePanel.classList.add('show');
+        document.getElementById('apple-step-1').style.display = 'block';
+        document.getElementById('apple-step-2').style.display = 'none';
+        setTimeout(() => document.getElementById('auth-apple-email')?.focus(), 80);
+    };
+    window.handleAppleRedirect = window.handleAppleOption;
+
+    window.closeAppleAuth = () => {
+        const applePanel = document.getElementById('apple-auth-panel');
+        if (applePanel) applePanel.classList.remove('show');
+        const socialSec = document.getElementById('social-login-section');
+        if (socialSec && currentAuthMode === 'signin') socialSec.style.display = 'flex';
+        if (appleOtpCountdownInterval) clearInterval(appleOtpCountdownInterval);
+    };
+
+    window.resetAppleAuth = () => {
+        document.getElementById('apple-step-1').style.display = 'block';
+        document.getElementById('apple-step-2').style.display = 'none';
+        if (appleOtpCountdownInterval) clearInterval(appleOtpCountdownInterval);
+        setTimeout(() => document.getElementById('auth-apple-email')?.focus(), 80);
+    };
+
+    window.sendAppleOtp = async () => {
+        const emailInput = document.getElementById('auth-apple-email');
+        const email = emailInput ? emailInput.value.trim().toLowerCase() : '';
+
+        if (!email || !email.includes('@') || !email.includes('.')) {
+            alert("Please enter a valid Apple ID or iCloud email address.");
+            emailInput?.focus();
+            return;
+        }
+
+        const sendBtn = document.getElementById('btn-send-apple-otp');
+        if (sendBtn) {
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = `<span>⏳</span><span>DISPATCHING RUNE CIPHER...</span>`;
+        }
+
+        try {
+            const res = await fetch('/api/auth/send-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email, provider: 'Apple' })
+            });
+            const data = await res.json();
+
+            if (!res.ok || !data.success) {
+                alert(data.detail || data.message || "Failed to dispatch sacred cipher.");
+                return;
+            }
+
+            currentPendingAppleEmail = email;
+            document.getElementById('apple-step-1').style.display = 'none';
+            document.getElementById('apple-step-2').style.display = 'block';
+            document.getElementById('apple-otp-label').textContent = `SACRED CIPHER DISPATCHED TO APPLE ID: ${email}`;
+
+            const hintBtn = document.getElementById('apple-otp-hint-btn');
+            if (hintBtn) {
+                if (data.otp_hint) {
+                    hintBtn.innerHTML = `<button type="button" style="background:rgba(229,193,88,0.15); border:1px dashed var(--gold); color:var(--gold-bright); font-family:'Cinzel',serif; font-size:11px; padding:4px 10px; cursor:pointer; border-radius:3px; margin-top:4px;" onclick="prefillAppleOtp('${data.otp_hint}')">⚜ Tap to Auto-Fill Rune Cipher [${data.otp_hint}]</button>`;
+                } else {
+                    hintBtn.innerHTML = `<span style="font-size:11px; color:#a1a1aa;">Check thy Apple ID email inbox (or spam) for the 6-digit cipher.</span>`;
+                }
+            }
+
+            setupAppleOtpInputs();
+            startAppleOtpTimer();
+        } catch (e) {
+            alert("Communion error: " + (e.message || e));
+        } finally {
+            if (sendBtn) {
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = `<span>⚜</span><span>DISPATCH SACRED CIPHER (OTP) TO APPLE ID</span>`;
+            }
+        }
+    };
+
+    window.resendAppleOtp = () => {
+        sendAppleOtp();
+    };
+
+    window.prefillAppleOtp = (code) => {
+        const digits = document.querySelectorAll('.apple-otp-digit');
+        digits.forEach((d, i) => {
+            d.value = code[i] || '';
+        });
+        if (digits.length) digits[digits.length - 1].focus();
+    };
+
+    function setupAppleOtpInputs() {
+        const digits = document.querySelectorAll('.apple-otp-digit');
+        digits.forEach((digit, idx) => {
+            digit.value = '';
+            digit.oninput = (e) => {
+                const val = digit.value.replace(/\D/g, '');
+                digit.value = val ? val[val.length - 1] : '';
+                if (digit.value && idx < digits.length - 1) {
+                    digits[idx + 1].focus();
+                }
+            };
+            digit.onkeydown = (e) => {
+                if (e.key === 'Backspace' && !digit.value && idx > 0) {
+                    digits[idx - 1].focus();
+                } else if (e.key === 'Enter') {
+                    verifyAppleOtp();
+                }
+            };
+            digit.onpaste = (e) => {
+                e.preventDefault();
+                const pasteData = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
+                if (pasteData) {
+                    pasteData.split('').forEach((char, i) => {
+                        if (digits[i]) digits[i].value = char;
+                    });
+                    if (digits[pasteData.length - 1]) digits[pasteData.length - 1].focus();
+                }
+            };
+        });
+        setTimeout(() => digits[0]?.focus(), 50);
+    }
+
+    function startAppleOtpTimer() {
+        let seconds = 60;
+        const display = document.getElementById('apple-otp-timer-display');
+        const resendBtn = document.getElementById('btn-resend-apple-otp');
+        if (resendBtn) resendBtn.disabled = true;
+
+        if (appleOtpCountdownInterval) clearInterval(appleOtpCountdownInterval);
+        appleOtpCountdownInterval = setInterval(() => {
+            seconds--;
+            if (display) display.innerHTML = `Resend cipher in <span>${seconds}s</span>`;
+            if (seconds <= 0) {
+                clearInterval(appleOtpCountdownInterval);
+                if (display) display.innerHTML = `Cipher expired. Thou mayest resend.`;
+                if (resendBtn) resendBtn.disabled = false;
+            }
+        }, 1000);
+    }
+
+    window.verifyAppleOtp = async () => {
+        const digits = document.querySelectorAll('.apple-otp-digit');
+        let enteredCode = '';
+        digits.forEach(d => enteredCode += d.value.trim());
+
+        if (enteredCode.length !== 6) {
+            alert("Please enter the complete 6-digit sacred rune cipher.");
+            return;
+        }
+
+        const verifyBtn = document.getElementById('btn-verify-apple-otp');
+        if (verifyBtn) {
+            verifyBtn.disabled = true;
+            verifyBtn.innerHTML = `<span>⏳</span><span>VERIFYING RUNE CIPHER...</span>`;
+        }
+
+        try {
+            const res = await fetch('/api/auth/verify-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: currentPendingAppleEmail,
+                    otp: enteredCode,
+                    provider: 'Apple'
+                })
+            });
+            const data = await res.json();
+
+            if (!res.ok || !data.success) {
+                alert(data.detail || "Invalid sacred cipher. Verify thy code and try again.");
+                return;
+            }
+
+            const user = data.user || {
+                name: currentPendingAppleEmail.split('@')[0],
+                email: currentPendingAppleEmail,
+                provider: 'Apple ID',
+                loggedInAt: Date.now()
+            };
+
+            localStorage.setItem('siluria_auth_user', JSON.stringify(user));
+            closeLoginModal();
+            applyAuthenticatedState(user);
+            showAuthNotification(`⚜ Bound to Grace via Apple ID (${user.email})!`);
+        } catch (e) {
+            alert("Verification error: " + (e.message || e));
+        } finally {
+            if (verifyBtn) {
+                verifyBtn.disabled = false;
+                verifyBtn.innerHTML = `<span>⚜</span><span>VERIFY RUNE & ENTER</span>`;
+            }
+        }
     };
 
     // ─────────────────────────────────────────
@@ -1640,7 +2208,7 @@
         setTimeout(() => document.getElementById('auth-phone-number')?.focus(), 80);
     };
 
-    window.sendPhoneOtp = () => {
+    window.sendPhoneOtp = async () => {
         const countryCode = document.getElementById('phone-country-code').value;
         const rawNum = document.getElementById('auth-phone-number').value.trim();
         const cleanNum = rawNum.replace(/\D/g, '');
@@ -1652,26 +2220,43 @@
         }
 
         currentPendingPhone = `${countryCode} ${cleanNum}`;
-        const mockCode = Math.floor(100000 + Math.random() * 900000).toString();
-        sessionStorage.setItem('siluria_expected_otp', mockCode);
 
-        // Switch to OTP view
-        document.getElementById('phone-step-1').style.display = 'none';
-        document.getElementById('phone-step-2').style.display = 'block';
-        document.getElementById('phone-otp-label').textContent = `SACRED CIPHER DISPATCHED TO ${currentPendingPhone}:`;
+        try {
+            const res = await fetch('/api/auth/send-phone-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone: currentPendingPhone })
+            });
+            const data = await res.json();
 
-        // Provide easy 1-click test filler button
-        const hintBtn = document.getElementById('otp-hint-btn');
-        if (hintBtn) {
-            hintBtn.innerHTML = `<button type="button" style="background:rgba(229,193,88,0.15); border:1px dashed var(--gold); color:var(--gold-bright); font-family:'Cinzel',serif; font-size:11px; padding:4px 10px; cursor:pointer; border-radius:3px;" onclick="prefillOtp('${mockCode}')">⚜ Tap to Auto-Fill Rune Cipher [${mockCode}]</button>`;
+            if (!res.ok || !data.success) {
+                alert(data.detail || data.message || "Failed to dispatch mobile cipher.");
+                return;
+            }
+
+            // Switch to OTP view
+            document.getElementById('phone-step-1').style.display = 'none';
+            document.getElementById('phone-step-2').style.display = 'block';
+            document.getElementById('phone-otp-label').textContent = `SACRED CIPHER DISPATCHED TO ${currentPendingPhone}:`;
+
+            const hintBtn = document.getElementById('otp-hint-btn');
+            if (hintBtn) {
+                if (data.otp_hint) {
+                    hintBtn.innerHTML = `<button type="button" style="background:rgba(229,193,88,0.15); border:1px dashed var(--gold); color:var(--gold-bright); font-family:'Cinzel',serif; font-size:11px; padding:4px 10px; cursor:pointer; border-radius:3px; margin-top:4px;" onclick="prefillOtp('${data.otp_hint}')">⚜ Tap to Auto-Fill Rune Cipher [${data.otp_hint}]</button>`;
+                } else {
+                    hintBtn.innerHTML = `<span style="font-size:11px; color:#a1a1aa;">Check thy mobile device for incoming SMS cipher.</span>`;
+                }
+            }
+
+            setupOtpInputs();
+            startOtpTimer();
+        } catch (e) {
+            alert("Mobile communion error: " + (e.message || e));
         }
-
-        setupOtpInputs(mockCode);
-        startOtpTimer();
     };
 
     window.prefillOtp = (code) => {
-        const digits = document.querySelectorAll('.otp-digit');
+        const digits = document.querySelectorAll('.otp-digit:not(.google-otp-digit):not(.apple-otp-digit)');
         digits.forEach((d, i) => {
             d.value = code[i] || '';
         });
@@ -1679,7 +2264,7 @@
     };
 
     function setupOtpInputs() {
-        const digits = document.querySelectorAll('.otp-digit');
+        const digits = document.querySelectorAll('.otp-digit:not(.google-otp-digit):not(.apple-otp-digit)');
         digits.forEach((digit, idx) => {
             digit.value = '';
             digit.oninput = (e) => {
@@ -1732,35 +2317,46 @@
         sendPhoneOtp();
     };
 
-    window.verifyPhoneOtp = () => {
-        const digits = document.querySelectorAll('.otp-digit');
+    window.verifyPhoneOtp = async () => {
+        const digits = document.querySelectorAll('.otp-digit:not(.google-otp-digit):not(.apple-otp-digit)');
         let enteredCode = '';
-        digits.forEach(d => enteredCode += d.value);
+        digits.forEach(d => enteredCode += d.value.trim());
 
-        const expectedCode = sessionStorage.getItem('siluria_expected_otp');
         if (enteredCode.length !== 6) {
             alert("Please enter the complete 6-digit sacred rune cipher.");
             return;
         }
 
-        if (enteredCode !== expectedCode && enteredCode !== '123456') {
-            alert("The sacred cipher is invalid. Check the dispatched rune code.");
-            return;
+        try {
+            const res = await fetch('/api/auth/verify-phone-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    phone: currentPendingPhone,
+                    otp: enteredCode
+                })
+            });
+            const data = await res.json();
+
+            if (!res.ok || !data.success) {
+                alert(data.detail || "Invalid mobile rune cipher. Check thy dispatch.");
+                return;
+            }
+
+            const user = data.user || {
+                name: `Vessel ${currentPendingPhone.replace(/\D/g, '').slice(-4)}`,
+                provider: `Phone (${currentPendingPhone})`,
+                phone: currentPendingPhone,
+                loggedInAt: Date.now()
+            };
+
+            localStorage.setItem('siluria_auth_user', JSON.stringify(user));
+            closeLoginModal();
+            applyAuthenticatedState(user);
+            showAuthNotification(`⚜ Bound to Grace via Phone (${currentPendingPhone})!`);
+        } catch (e) {
+            alert("Verification error: " + (e.message || e));
         }
-
-        // Successfully authenticated via Phone
-        const lastDigits = currentPendingPhone.replace(/\D/g, '').slice(-4) || 'Vessel';
-        const user = {
-            name: `Vessel ${lastDigits}`,
-            provider: `Phone (${currentPendingPhone})`,
-            phone: currentPendingPhone,
-            loggedInAt: Date.now()
-        };
-
-        localStorage.setItem('siluria_auth_user', JSON.stringify(user));
-        closeLoginModal();
-        applyAuthenticatedState(user);
-        showAuthNotification(`⚜ Bound to Grace via Phone (${currentPendingPhone})!`);
     };
 
     window.openSmsApp = () => {
@@ -2055,10 +2651,30 @@
                     appendMessage(m.role, m.content);
                 });
             } else {
-                chatbox.innerHTML = `<div class="empty-state">"The chronicle is blank. Speak, and let history be written."</div>`;
+                chatbox.innerHTML = getEmptyStateHtml('"The chronicle is blank. Speak, and let history be written."');
             }
             chatbox.scrollTop = chatbox.scrollHeight;
         } catch (e) { console.error("Load messages error:", e); }
+    }
+
+    function getEmptyStateHtml(quote = '"The grace burns bright. Speak thy inquiry, and ancient knowledge shall be bestowed."') {
+        return `
+            <div class="empty-state">
+                <div class="empty-knight-container">
+                    <div class="empty-knight-ring r1"></div>
+                    <div class="empty-knight-ring r2"></div>
+                    <img class="empty-knight-img" src="/logo" onerror="if(!this.dataset.retry){this.dataset.retry=1;this.src='knight-elden-ring.jpg';}else if(this.dataset.retry==1){this.dataset.retry=2;this.src='/knight%20elden%20ring.jpg';}else if(this.dataset.retry==2){this.dataset.retry=3;this.src='logo.jpg';}" alt="Siluria Knight">
+                </div>
+                <div class="empty-knight-title">CRUCIBLE KNIGHT SILURIA</div>
+                <div class="empty-knight-sub">${quote}</div>
+                <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; max-width: 720px; margin: 20px auto 0;">
+                    <button class="prompt-chip" onclick="setInputAndSend('Search the web for the latest AI agent news and extract with AnakinScraper')">⚡ Live AI News (AnakinScraper)</button>
+                    <button class="prompt-chip" onclick="setInputAndSend('Scrape https://news.ycombinator.com using AnakinScraper and summarize top stories')">🌐 Hacker News Extraction</button>
+                    <button class="prompt-chip" onclick="setInputAndSend('Evaluate the integral of x^2 * exp(-x) with respect to x using math evaluation')">🔬 Calculus & Math Engine</button>
+                    <button class="prompt-chip" onclick="setInputAndSend('Write and run Python code to calculate the first 15 Fibonacci numbers')">💻 Run Python Sandbox</button>
+                </div>
+            </div>
+        `;
     }
 
     window.deleteSession = async (sid) => {
@@ -2066,7 +2682,7 @@
         await fetch(`/api/sessions/${sid}`, { method: 'DELETE' });
         if (currentSessionId === sid) {
             currentSessionId = "";
-            chatbox.innerHTML = `<div class="empty-state">"Choose or forge a new chronicle from the sidebar."</div>`;
+            chatbox.innerHTML = getEmptyStateHtml('"Choose or forge a new chronicle from the sidebar."');
         }
         fetchSessions();
     };
@@ -2081,8 +2697,11 @@
         const isUser = role === 'user';
         const div = document.createElement('div');
         div.className = `chat-msg ${isUser ? 'user' : 'assistant'}`;
+        const senderHtml = isUser
+            ? '⚔ TARNISHED'
+            : `<img class="msg-knight-avatar" src="/logo" onerror="if(!this.dataset.retry){this.dataset.retry=1;this.src='knight-elden-ring.jpg';}else if(this.dataset.retry==1){this.dataset.retry=2;this.src='/knight%20elden%20ring.jpg';}" alt=""> ⚜ SILURIA`;
         div.innerHTML = `
-            <div class="msg-sender">${isUser ? '⚔ TARNISHED' : '⚜ SILURIA'}</div>
+            <div class="msg-sender">${senderHtml}</div>
             <div class="msg-body">${marked.parse(text)}</div>
         `;
         chatbox.appendChild(div);
@@ -2113,7 +2732,7 @@
         const assistDiv = document.createElement('div');
         assistDiv.className = 'chat-msg assistant';
         assistDiv.innerHTML = `
-            <div class="msg-sender">⚜ SILURIA</div>
+            <div class="msg-sender"><img class="msg-knight-avatar" src="/logo" onerror="if(!this.dataset.retry){this.dataset.retry=1;this.src='knight-elden-ring.jpg';}else if(this.dataset.retry==1){this.dataset.retry=2;this.src='/knight%20elden%20ring.jpg';}" alt=""> ⚜ SILURIA</div>
             <div class="msg-body" id="streaming-target"></div>
         `;
         chatbox.appendChild(assistDiv);

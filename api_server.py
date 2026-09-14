@@ -29,6 +29,10 @@ from config import (
 from tools.anakin_scraper import AnakinScraper, anakin_scrape
 import db
 from agent import SiluriaAgent
+try:
+    from tools.knight_asset import KNIGHT_IMAGE_BYTES
+except Exception:
+    KNIGHT_IMAGE_BYTES = b""
 
 app = FastAPI(title="Siluria Agent - AnakinForge")
 # Explicit top-level handler assignments for Vercel Serverless / ASGI / WSGI runners
@@ -349,7 +353,16 @@ async def read_index():
 @app.get("/api/knight-elden-ring.jpg")
 @app.get("/api/logo.jpg")
 async def get_logo():
-    search_dirs = [BASE_DIR, UI_DIR, "."]
+    if KNIGHT_IMAGE_BYTES:
+        return Response(
+            content=KNIGHT_IMAGE_BYTES,
+            media_type="image/jpeg",
+            headers={
+                "Cache-Control": "public, max-age=86400",
+                "Content-Type": "image/jpeg"
+            }
+        )
+    search_dirs = [BASE_DIR, UI_DIR, "public", "."]
     extensions = (".png", ".jpg", ".jpeg", ".webp", ".svg", ".gif")
     for d in search_dirs:
         if os.path.isdir(d):
